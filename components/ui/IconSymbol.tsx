@@ -1,15 +1,28 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
-import { ComponentProps } from 'react';
+import { SymbolWeight } from 'expo-symbols';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<
-  SymbolViewProps['name'],
-  ComponentProps<typeof MaterialIcons>['name']
->;
-type IconSymbolName = keyof typeof MAPPING;
+type IconSymbolName =
+  | 'house.fill'
+  | 'paperplane.fill'
+  | 'chevron.left.forwardslash.chevron.right'
+  | 'chevron.right'
+  | 'globe'
+  | 'gear'
+  | 'gearshape'
+  | 'gearshape.fill'
+  | 'bell'
+  | 'bell.fill'
+  | 'plus'
+  | 'plus.circle'
+  | 'plus.circle.fill'
+  | 'menu'
+  | 'minus'
+  | 'minus.circle'
+  | 'minus.circle.fill'
+  | 'menubar.rectangle';
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -33,7 +46,9 @@ const MAPPING = {
   minus: 'remove',
   'minus.circle': 'remove-circle',
   'minus.circle.fill': 'remove-circle',
-} as IconMapping;
+  'menubar.rectangle': 'list',
+  menu: 'menu',
+} as const;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
