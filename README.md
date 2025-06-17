@@ -135,6 +135,46 @@ npx expo start
 - **NativeWind** - Tailwind CSS for React Native
 - **TypeScript** - Type safety
 
+## CI/CD Pipeline
+
+This project uses **GitHub Actions** for Continuous Integration to ensure code quality and catch issues early.
+
+### What Gets Checked Automatically:
+
+Every time you push code or create a pull request, our CI pipeline automatically runs:
+
+- ✅ **Code Quality** - ESLint checks for style and best practices
+- ✅ **Type Safety** - TypeScript verification to catch type errors
+- ✅ **Security** - npm audit to find vulnerable dependencies
+
+### Workflow Triggers:
+
+- **Push to `main`** - Full CI pipeline runs  
+- **Pull Requests to `main`** - All checks must pass before merging
+
+### Viewing CI Results:
+
+1. Go to the **Actions** tab in GitHub
+2. Click on any workflow run to see detailed logs
+3. Green ✅ = All checks passed
+4. Red ❌ = Something failed (check the logs for details)
+
+### Test locally:
+
+Before pushing code, you can run the same checks locally:
+
+```bash
+# Check code style
+npm run lint
+
+# Check TypeScript types
+npx tsc --noEmit
+
+# Check for security issues
+npm audit
+```
+
+
 ## Project Structure
 
 ```
