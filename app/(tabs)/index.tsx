@@ -1,79 +1,57 @@
+import { expiringItems, getExpiryColorClass } from '@/data/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface ExpiringItem {
-  id: string;
-  name: string;
-  daysUntilExpiry: number;
-  category: string;
-}
-
 export default function HomeScreen() {
   const userName = 'Cat';
-  const expiringItems: ExpiringItem[] = [
-    { id: '1', name: 'Milk', daysUntilExpiry: 3, category: 'dairy' },
-    { id: '2', name: 'Eggs', daysUntilExpiry: 5, category: 'dairy' },
-    { id: '3', name: 'Butter', daysUntilExpiry: 7, category: 'dairy' },
-    { id: '4', name: 'Cheese', daysUntilExpiry: 10, category: 'dairy' },
-  ];
-
-  const getExpiryColorClass = (days: number) => {
-    if (days <= 0) return 'text-red-700';
-    if (days <= 3) return 'text-red-500';
-    if (days <= 5) return 'text-orange-500';
-    if (days <= 7) return 'text-yellow-500';
-    return 'text-green-500';
-  };
+  const router = useRouter();
 
   return (
-    <SafeAreaView className='flex-1 bg-gray-50'>
-      <View className='bg-white px-5 py-4 border-b border-gray-200'>
-        <Text className='text-2xl font-bold text-gray-800'>FridgePal</Text>
-      </View>
-
+    <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
       <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View className='px-5 py-6'>
-          <Text className='text-3xl font-bold text-gray-800'>
+          <Text className='text-3xl font-bold text-gray-800 dark:text-white'>
             Welcome, {userName}!
           </Text>
-          <Text className='text-base text-gray-600 mt-1'>
+          <Text className='text-base text-gray-600 mt-1 dark:text-gray-300'>
             Manage your fridge efficiently
           </Text>
         </View>
 
         {/* Quick Actions */}
         <View className='px-5 mb-6'>
-          <Text className='text-xl font-semibold text-gray-800 mb-4'>
+          <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
             Quick Actions
           </Text>
           <View className='flex-row gap-2'>
             <TouchableOpacity
-              className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm'
-              // onPress={handleAddProduct}
+              className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
+              onPress={() => router.push('/addProduct')}
               style={{ elevation: 3 }}
             >
-              <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-full mr-3'>
+              <View
+                className='w-10 h-10 justify-center items-center bg-gray-100
+              dark:bg-slate-800 rounded-full mr-3'
+              >
                 <MaterialIcons name='add' size={24} color='#2196F3' />
               </View>
               <View className='flex-1'>
-                <Text className='text-base font-semibold text-gray-800'>
+                <Text className='text-base font-semibold text-gray-800 dark:text-white'>
                   Add Product
-                </Text>
-                <Text className='text-xs text-gray-500 mt-0.5'>
-                  Add new items...
                 </Text>
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity
-              className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm'
-              // onPress={handleScanProduct}
+              className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
+              onPress={() => router.push('/scanProduct')}
               style={{ elevation: 3 }}
             >
-              <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-full mr-3'>
+              <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-full mr-3 dark:bg-slate-800'>
                 <MaterialIcons
                   name='qr-code-scanner'
                   size={24}
@@ -81,11 +59,8 @@ export default function HomeScreen() {
                 />
               </View>
               <View className='flex-1'>
-                <Text className='text-base font-semibold text-gray-800'>
+                <Text className='text-base font-semibold text-gray-800 dark:text-white'>
                   Scan Product
-                </Text>
-                <Text className='text-xs text-gray-500 mt-0.5'>
-                  Scan items usi...
                 </Text>
               </View>
             </TouchableOpacity>
@@ -94,17 +69,17 @@ export default function HomeScreen() {
 
         {/* Expiring Products List */}
         <View className='px-5 mb-6'>
-          <Text className='text-xl font-semibold text-gray-800 mb-4'>
+          <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
             Expiring Products
           </Text>
 
           {expiringItems.map((item) => (
             <View
               key={item.id}
-              className='flex-row justify-between items-center bg-white p-4 rounded-lg mb-3'
+              className='flex-row justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-lg mb-3'
             >
               <View className='flex-1'>
-                <Text className='text-base font-medium text-gray-800'>
+                <Text className='text-base font-medium text-gray-800 dark:text-white'>
                   {item.name}
                 </Text>
                 <Text
