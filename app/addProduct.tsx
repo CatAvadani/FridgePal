@@ -1,3 +1,4 @@
+import { CATEGORIES, Product } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
@@ -17,51 +18,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function AddProductScreen() {
   const router = useRouter();
 
-  // Form state
   const [productName, setProductName] = useState('');
-  const [category, setCategory] = useState('');
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
 
-  // Handle form submission
   const handleSave = () => {
-    // Validation
     if (!productName.trim()) {
       Alert.alert('Error', 'Please enter a product name');
       return;
     }
-    if (!category.trim()) {
+
+    if (!categoryId) {
       Alert.alert('Error', 'Please select a category');
       return;
     }
 
     // Create product object
-    const newProduct = {
-      id: Date.now().toString(), // Temporary ID
-      name: productName,
-      category: category,
+    const newProduct: Product = {
+      productId: Date.now().toString(),
+      userId: '123',
+      productName,
+      quantity: 1,
+      creationDate: new Date().toISOString(),
       expirationDate: expirationDate.toISOString(),
-      daysUntilExpiry: calculateDaysUntilExpiry(expirationDate),
+      notified: false,
+      categoryId: categoryId,
     };
 
     // TODO: Save to database
     console.log('New product:', newProduct);
 
-    // For now, just navigate back
-    Alert.alert('Success', 'Product added successfully!', [
-      { text: 'OK', onPress: () => router.back() },
-    ]);
-  };
-
-  // Calculate days until expiry
-  const calculateDaysUntilExpiry = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const expiry = new Date(date);
-    expiry.setHours(0, 0, 0, 0);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    // For now, just navigate back - need to implement actual saving logic later and show a toast instead
+    Alert.alert(
+      'Product added successfully! ',
+      'You can view it in your product list.'
+    );
+    router.back();
   };
 
   return (
@@ -86,17 +80,42 @@ export default function AddProductScreen() {
           </View>
 
           {/* Category Input */}
-          <View className='mb-6'>
+          <View className='mb-6 relative z-10'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Category
             </Text>
-            <TextInput
-              className='bg-white dark:bg-gray-800 p-4 rounded-lg text-gray-800 dark:text-white'
-              placeholder='Enter category (e.g., Dairy, Meat, Vegetables)'
-              placeholderTextColor='#9CA3AF'
-              value={category}
-              onChangeText={setCategory}
-            />
+
+            <TouchableOpacity
+              className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
+              onPress={() => setDropdownOpen((prev) => !prev)}
+            >
+              <Text className='text-gray-800 dark:text-white'>
+                {categoryId
+                  ? CATEGORIES.find((cat) => cat.categoryId === categoryId)
+                      ?.categoryName
+                  : 'Select category'}
+              </Text>
+              <MaterialIcons name='arrow-drop-down' size={24} color='#9CA3AF' />
+            </TouchableOpacity>
+
+            {dropdownOpen && (
+              <View className='absolute top-[90%] left-0 right-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg mt-2 shadow-lg z-20'>
+                {CATEGORIES.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.categoryId}
+                    className='p-4 border-b border-gray-200 dark:border-gray-700'
+                    onPress={() => {
+                      setCategoryId(cat.categoryId);
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    <Text className='text-gray-800 dark:text-white'>
+                      {cat.categoryName}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
 
           {/* Expiration Date */}

@@ -1,4 +1,5 @@
-import { initialProducts, Product } from '@/data/mockData';
+import { initialProducts } from '@/data/mockData';
+import { Product } from '@/types/interfaces';
 import React, {
   createContext,
   PropsWithChildren,

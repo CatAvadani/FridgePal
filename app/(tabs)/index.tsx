@@ -1,5 +1,6 @@
+import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
 import { useProducts } from '@/contexts/ProductContext';
-import { getExpiryColorClass } from '@/data/mockData';
+import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -10,6 +11,13 @@ export default function HomeScreen() {
   const userName = 'Cat';
   const router = useRouter();
   const { products } = useProducts();
+
+  const productDisplays = products.map(convertToProductDisplay);
+
+  // Filter and sort products that are expiring within the next 10 days
+  const expiringProducts = productDisplays
+    .filter((p) => p.daysUntilExpiry <= 10)
+    .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
@@ -75,23 +83,23 @@ export default function HomeScreen() {
             Expiring Products
           </Text>
 
-          {products.map((item) => (
+          {expiringProducts.map((product) => (
             <View
-              key={item.id}
+              key={product.productId}
               className='flex-row justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-lg mb-3'
             >
               <View className='flex-1'>
                 <Text className='text-base font-medium text-gray-800 dark:text-white'>
-                  {item.name}
+                  {product.productName} ({product.quantity})
                 </Text>
                 <Text
-                  className={`text-sm mt-1 ${getExpiryColorClass(item.daysUntilExpiry)}`}
+                  className={`text-sm mt-1 ${getExpiryColorClass(product.daysUntilExpiry)}`}
                 >
-                  {item.daysUntilExpiry === 0
+                  {product.daysUntilExpiry === 0
                     ? 'Expires today'
-                    : item.daysUntilExpiry === 1
+                    : product.daysUntilExpiry === 1
                       ? 'Expires tomorrow'
-                      : `Expires in ${item.daysUntilExpiry} days`}
+                      : `Expires in ${product.daysUntilExpiry} days`}
                 </Text>
               </View>
               <MaterialIcons name='chevron-right' size={24} color='#999' />
