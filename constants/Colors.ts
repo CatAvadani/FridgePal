@@ -1,6 +1,6 @@
 export const colors = {
   light: {
-    tint: '#3B82F6',
+    tint: '#FF5733',
     background: '#FFFFFF',
     text: '#1F2937',
     inactive: '#6B7280',
