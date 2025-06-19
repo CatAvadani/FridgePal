@@ -32,6 +32,7 @@ export default function RootLayout() {
             title: 'Add Product',
             headerBackTitle: '',
             headerBackVisible: true,
+            headerTintColor: 'black',
           }}
         />
         <Stack.Screen

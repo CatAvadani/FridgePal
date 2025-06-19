@@ -1,3 +1,4 @@
+import { useProducts } from '@/contexts/ProductContext';
 import { CATEGORIES, Product } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -17,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AddProductScreen() {
   const router = useRouter();
+  const { addProduct } = useProducts();
 
   const [productName, setProductName] = useState('');
   const [expirationDate, setExpirationDate] = useState(new Date());
@@ -44,18 +46,20 @@ export default function AddProductScreen() {
       creationDate: new Date().toISOString(),
       expirationDate: expirationDate.toISOString(),
       notified: false,
-      categoryId: categoryId,
+      categoryId,
     };
 
-    // TODO: Save to database
     console.log('New product:', newProduct);
 
-    // For now, just navigate back - need to implement actual saving logic later and show a toast instead
-    Alert.alert(
-      'Product added successfully! ',
-      'You can view it in your product list.'
-    );
-    router.back();
+    try {
+      addProduct(newProduct);
+      Alert.alert('Success', 'Product added successfully');
+      router.back();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add product. Please try again.');
+      console.error('Error adding product:', error);
+      return;
+    }
   };
 
   return (
@@ -89,7 +93,7 @@ export default function AddProductScreen() {
               className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
               onPress={() => setDropdownOpen((prev) => !prev)}
             >
-              <Text className='text-gray-800 dark:text-white'>
+              <Text className='text-gray-400 dark:text-white'>
                 {categoryId
                   ? CATEGORIES.find((cat) => cat.categoryId === categoryId)
                       ?.categoryName
@@ -109,7 +113,7 @@ export default function AddProductScreen() {
                       setDropdownOpen(false);
                     }}
                   >
-                    <Text className='text-gray-800 dark:text-white'>
+                    <Text className='text-gray-600 dark:text-white'>
                       {cat.categoryName}
                     </Text>
                   </TouchableOpacity>
@@ -127,7 +131,7 @@ export default function AddProductScreen() {
               className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
               onPress={() => setShowDatePicker(true)}
             >
-              <Text className='text-gray-800 dark:text-white'>
+              <Text className='text-gray-400 dark:text-white'>
                 {expirationDate.toLocaleDateString()}
               </Text>
               <MaterialIcons name='calendar-today' size={20} color='#9CA3AF' />
@@ -153,15 +157,15 @@ export default function AddProductScreen() {
           {/* Action Buttons */}
           <View className='flex-row gap-4 mt-8'>
             <TouchableOpacity
-              className='flex-1 bg-gray-300 dark:bg-gray-700 p-4 rounded-lg'
+              className='flex-1 button-secondary border border-primary  dark:bg-gray-700 p-4 rounded-lg'
               onPress={() => router.back()}
             >
-              <Text className='text-center text-gray-700 dark:text-gray-300 font-semibold'>
+              <Text className='text-center text-primary dark:text-gray-300 font-semibold'>
                 Cancel
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              className='flex-1 bg-blue-500 p-4 rounded-lg'
+              className='flex-1 button-primary p-4 rounded-lg'
               onPress={handleSave}
             >
               <Text className='text-center text-white font-semibold'>Save</Text>
