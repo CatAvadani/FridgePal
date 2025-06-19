@@ -1,4 +1,5 @@
-import { expiringItems, getExpiryColorClass } from '@/data/mockData';
+import { useProducts } from '@/contexts/ProductContext';
+import { getExpiryColorClass } from '@/data/mockData';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -8,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function HomeScreen() {
   const userName = 'Cat';
   const router = useRouter();
+  const { products } = useProducts();
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
@@ -73,7 +75,7 @@ export default function HomeScreen() {
             Expiring Products
           </Text>
 
-          {expiringItems.map((item) => (
+          {products.map((item) => (
             <View
               key={item.id}
               className='flex-row justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-lg mb-3'

@@ -1,3 +1,4 @@
+import ProductProvider from '@/contexts/ProductContext';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -5,7 +6,7 @@ import '../global.css';
 
 export default function RootLayout() {
   return (
-    <>
+    <ProductProvider>
       <Stack>
         <Stack.Screen
           name='(tabs)'
@@ -26,6 +27,6 @@ export default function RootLayout() {
         <Stack.Screen name='+not-found' />
       </Stack>
       <StatusBar style='auto' />
-    </>
+    </ProductProvider>
   );
 }
