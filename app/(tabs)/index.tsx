@@ -94,7 +94,7 @@ export default function HomeScreen() {
                 className='w-10 h-10 justify-center items-center bg-gray-100
               dark:bg-slate-800 rounded-lg mr-3'
               >
-                <MaterialIcons name='add' size={24} color='gray' />
+                <MaterialIcons name='add' size={24} color='#ff5733' />
               </View>
               <View className='flex-1'>
                 <Text className='text-base  font-semibold text-gray-800 dark:text-white'>
@@ -109,7 +109,7 @@ export default function HomeScreen() {
               style={{ elevation: 3 }}
             >
               <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800'>
-                <MaterialIcons name='camera-alt' size={24} color='gray' />
+                <MaterialIcons name='camera-alt' size={24} color='#ff5733' />
               </View>
               <View className='flex-1'>
                 <Text className='text-base font-semibold text-gray-800 dark:text-white'>
