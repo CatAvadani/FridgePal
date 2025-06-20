@@ -12,6 +12,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 1,
     daysUntilExpiry: 10,
     categoryName: 'Dairy',
+    imageUrl:
+      'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fG1pbGt8ZW58MHx8MHx8fDA%3D',
   },
   {
     productId: '2',
@@ -24,6 +26,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 2,
     daysUntilExpiry: 8,
     categoryName: 'Meat',
+    imageUrl:
+      'https://images.unsplash.com/photo-1641898378548-ac93da99786a?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNoaWNrZW4lMjBicmVhc3R8ZW58MHx8MHx8fDA%3D',
   },
   {
     productId: '3',
@@ -36,6 +40,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 3,
     daysUntilExpiry: 9,
     categoryName: 'Vegetables',
+    imageUrl:
+      'https://images.unsplash.com/photo-1518164147695-36c13dd568f5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YnJvY2NvbGl8ZW58MHx8MHx8fDA%3D',
   },
   {
     productId: '4',
@@ -48,6 +54,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 4,
     daysUntilExpiry: 7,
     categoryName: 'Fruits',
+    imageUrl:
+      'https://images.unsplash.com/photo-1584306670957-acf935f5033c?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fGFwcGxlfGVufDB8fDB8fHww',
   },
   {
     productId: '5',
@@ -60,6 +68,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 5,
     daysUntilExpiry: 6,
     categoryName: 'Fish',
+    imageUrl:
+      'https://images.unsplash.com/photo-1499125562588-29fb8a56b5d5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2FsbW9ufGVufDB8fDB8fHww',
   },
   {
     productId: '6',
@@ -72,6 +82,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 6,
     daysUntilExpiry: 5,
     categoryName: 'Beverages',
+    imageUrl:
+      'https://images.unsplash.com/photo-1587015990127-424b954e38b5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fG9yYW5nZSUyMGp1aWNlfGVufDB8fDB8fHww',
   },
   {
     productId: '7',
@@ -84,6 +96,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 7,
     daysUntilExpiry: 4,
     categoryName: 'Frozen',
+    imageUrl:
+      'https://images.unsplash.com/photo-1590685006710-2b478c69b26b?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cGVhc3xlbnwwfHwwfHx8MA%3D%3D',
   },
   {
     productId: '8',
@@ -96,6 +110,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 8,
     daysUntilExpiry: 3,
     categoryName: 'Other',
+    imageUrl:
+      'https://plus.unsplash.com/premium_photo-1675788939191-713c2abf3da6?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YnJlYWR8ZW58MHx8MHx8fDA%3D',
   },
   {
     productId: '9',
@@ -108,6 +124,8 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 1,
     daysUntilExpiry: 2,
     categoryName: 'Dairy',
+    imageUrl:
+      'https://images.unsplash.com/photo-1564149503905-7fef56abc1f2?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8eW9ndXJ0fGVufDB8fDB8fHww',
   },
   {
     productId: '10',
@@ -120,5 +138,7 @@ export const initialProducts: ProductDisplay[] = [
     categoryId: 2,
     daysUntilExpiry: 1,
     categoryName: 'Meat',
+    imageUrl:
+      'https://images.unsplash.com/photo-1613454320437-0c228c8b1723?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8YmVlZiUyMG1lYXR8ZW58MHx8MHx8fDA%3D',
   },
 ];

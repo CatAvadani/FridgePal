@@ -20,6 +20,7 @@ export interface Product {
   expirationDate: string;
   notified: boolean;
   categoryId: number;
+  imageUrl?: string;
 }
 
 export interface ProductDisplay extends Product {
