@@ -58,7 +58,7 @@ export default function HomeScreen() {
           style={{ marginTop: imageMarginTop }}
         >
           <Text
-            className='text-5xl font-bold text-white'
+            className='text-3xl font-bold text-white'
             style={{ paddingTop: insets.top + 20 }}
           >
             FridgePal

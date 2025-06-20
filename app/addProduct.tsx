@@ -64,6 +64,21 @@ export default function AddProductScreen() {
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
+      {/* Custom Header */}
+      <View className='bg-transparent dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
+        <View className='flex-row items-center justify-between px-4 py-3'>
+          <TouchableOpacity onPress={() => router.back()} className='p-2'>
+            <MaterialIcons name='arrow-back' size={24} color='#000' />
+          </TouchableOpacity>
+
+          <Text className='text-2xl font-semibold text-gray-900 dark:text-white'>
+            Add Product
+          </Text>
+
+          <View className='w-10' />
+        </View>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className='flex-1'

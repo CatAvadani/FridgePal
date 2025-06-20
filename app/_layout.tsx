@@ -21,6 +21,7 @@ export default function RootLayout() {
   return (
     <ProductProvider>
       <ExpiryColorPresets />
+
       <Stack>
         <Stack.Screen
           name='(tabs)'
@@ -30,14 +31,19 @@ export default function RootLayout() {
           name='addProduct'
           options={{
             title: 'Add Product',
+            headerTitleAlign: 'center',
             headerBackTitle: '',
-            headerBackVisible: true,
+            headerShown: false,
             headerTintColor: 'black',
           }}
         />
+
         <Stack.Screen
           name='scanProduct'
-          options={{ title: 'Scan Product', headerBackTitle: '' }}
+          options={{
+            title: 'Scan Product',
+            headerBackTitle: '',
+          }}
         />
         <Stack.Screen name='+not-found' />
       </Stack>
