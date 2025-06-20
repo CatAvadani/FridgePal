@@ -1,4 +1,4 @@
-import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
+import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/contexts/ProductContext';
 import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -127,26 +127,7 @@ export default function HomeScreen() {
           </Text>
 
           {expiringProducts.map((product) => (
-            <View
-              key={product.productId}
-              className='flex-row justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-lg mb-3'
-            >
-              <View className='flex-1'>
-                <Text className='text-base font-medium text-gray-800 dark:text-white'>
-                  {product.productName} ({product.quantity})
-                </Text>
-                <Text
-                  className={`text-sm mt-1 ${getExpiryColorClass(product.daysUntilExpiry)}`}
-                >
-                  {product.daysUntilExpiry === 0
-                    ? 'Expires today'
-                    : product.daysUntilExpiry === 1
-                      ? 'Expires tomorrow'
-                      : `Expires in ${product.daysUntilExpiry} days`}
-                </Text>
-              </View>
-              <MaterialIcons name='chevron-right' size={24} color='#999' />
-            </View>
+            <ProductCard key={product.productId} product={product} />
           ))}
         </View>
       </ScrollView>
