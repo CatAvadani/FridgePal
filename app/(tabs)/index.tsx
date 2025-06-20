@@ -105,7 +105,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
-              onPress={() => router.push('/scanProduct')}
+              onPress={() => router.push('/cameraScreen')}
               style={{ elevation: 3 }}
             >
               <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800'>
