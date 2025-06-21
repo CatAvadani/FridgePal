@@ -21,6 +21,7 @@ export default function AddProductScreen() {
   const { addProduct } = useProducts();
 
   const [productName, setProductName] = useState('');
+  const [quantity, setQuantity] = useState('1');
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -29,6 +30,12 @@ export default function AddProductScreen() {
   const handleSave = () => {
     if (!productName.trim()) {
       Alert.alert('Error', 'Please enter a product name');
+      return;
+    }
+
+    const quantityNum = parseInt(quantity);
+    if (!quantity.trim() || isNaN(quantityNum) || quantityNum <= 0) {
+      Alert.alert('Error', 'Please enter a valid quantity (greater than 0)');
       return;
     }
 
@@ -42,7 +49,7 @@ export default function AddProductScreen() {
       productId: Date.now().toString(),
       userId: '123',
       productName,
-      quantity: 1,
+      quantity: quantityNum,
       creationDate: new Date().toISOString(),
       expirationDate: expirationDate.toISOString(),
       notified: false,
@@ -95,6 +102,21 @@ export default function AddProductScreen() {
               placeholderTextColor='#9CA3AF'
               value={productName}
               onChangeText={setProductName}
+            />
+          </View>
+
+          {/* Quantity Input */}
+          <View className='mb-6'>
+            <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
+              Quantity
+            </Text>
+            <TextInput
+              className='bg-white dark:bg-gray-800 p-4 rounded-lg text-gray-800 dark:text-white'
+              placeholder='Enter quantity'
+              placeholderTextColor='#9CA3AF'
+              value={quantity}
+              onChangeText={setQuantity}
+              keyboardType='numeric'
             />
           </View>
 
