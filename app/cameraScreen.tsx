@@ -225,7 +225,6 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(10px)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
