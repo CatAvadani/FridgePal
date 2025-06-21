@@ -1,3 +1,6 @@
+import CameraZoomControls from '@/components/CameraZoomControls';
+import { useProducts } from '@/contexts/ProductContext';
+import { mockSendToBackend } from '@/services/cameraApi';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
@@ -18,6 +21,7 @@ export default function CameraScreen() {
   const [showZoomSlider, setShowZoomSlider] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
+  const { addProduct } = useProducts();
 
   // Pinch to zoom handler
   const pinchGesture = useRef(
@@ -79,11 +83,34 @@ export default function CameraScreen() {
   const handleSnap = async () => {
     if (cameraRef.current) {
       try {
-        const photo = await cameraRef.current.takePictureAsync();
-        console.log('Photo taken:', photo.uri);
+        const photo = await cameraRef.current.takePictureAsync({
+          base64: true,
+        });
+        // Mock the AI backend call
+        const response = await mockSendToBackend(photo);
+
+        const newProduct = {
+          productId: Date.now().toString(),
+          userId: '123',
+          productName: response.productName,
+          quantity: response.quantity,
+          creationDate: new Date().toISOString(),
+          expirationDate: response.expirationDate,
+          notified: false,
+          categoryId: response.categoryId,
+          daysUntilExpiry: Math.ceil(
+            (new Date(response.expirationDate).getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24)
+          ),
+          categoryName: response.categoryName,
+          imageUrl: photo.uri,
+        };
+
+        addProduct(newProduct);
+
         Alert.alert(
-          'Photo taken',
-          'This is where the image would be sent to the backend'
+          'Product recognized!',
+          `Name: ${response.productName}\nExpires: ${response.expirationDate}`
         );
         router.back();
       } catch (error) {
@@ -96,7 +123,6 @@ export default function CameraScreen() {
   const handleZoomChange = (value: number) => {
     setZoom(value);
     setShowZoomSlider(true);
-    // Hide slider after interaction
     setTimeout(() => setShowZoomSlider(false), 2000);
   };
 
@@ -125,12 +151,6 @@ export default function CameraScreen() {
           </TouchableOpacity>
         </View>
 
-        {zoom > 0 && (
-          <View style={styles.zoomIndicator}>
-            <Text style={styles.zoomText}>{(1 + zoom * 4).toFixed(1)}x</Text>
-          </View>
-        )}
-
         {/* Camera frame overlay */}
         <View style={styles.cameraOverlay}>
           <View style={styles.frameCornerTopLeft} />
@@ -139,55 +159,11 @@ export default function CameraScreen() {
           <View style={styles.frameCornerBottomRight} />
         </View>
 
-        {showZoomSlider && (
-          <View style={styles.zoomSliderContainer}>
-            <View style={styles.zoomSliderTrack}>
-              <View
-                style={[styles.zoomSliderFill, { width: `${zoom * 100}%` }]}
-              />
-              <View
-                style={[styles.zoomSliderThumb, { left: `${zoom * 100}%` }]}
-              />
-            </View>
-            <View style={styles.zoomLabels}>
-              <Text style={styles.zoomLabel}>1x</Text>
-              <Text style={styles.zoomLabel}>5x</Text>
-            </View>
-          </View>
-        )}
-
-        <View style={styles.zoomButtonsContainer}>
-          <TouchableOpacity
-            style={styles.zoomButton}
-            onPress={() => handleZoomChange(0)}
-          >
-            <Text
-              style={[styles.zoomButtonText, zoom === 0 && styles.activeZoom]}
-            >
-              1x
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.zoomButton}
-            onPress={() => handleZoomChange(0.5)}
-          >
-            <Text
-              style={[styles.zoomButtonText, zoom === 0.5 && styles.activeZoom]}
-            >
-              3x
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.zoomButton}
-            onPress={() => handleZoomChange(1)}
-          >
-            <Text
-              style={[styles.zoomButtonText, zoom === 1 && styles.activeZoom]}
-            >
-              5x
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <CameraZoomControls
+          zoom={zoom}
+          onZoomChange={handleZoomChange}
+          showZoomSlider={showZoomSlider}
+        />
 
         <View style={styles.bottomControls}>
           <TouchableOpacity onPress={toggleCamera} style={styles.flipButton}>

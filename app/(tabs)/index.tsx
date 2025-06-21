@@ -2,10 +2,11 @@ import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
 import { useProducts } from '@/contexts/ProductContext';
 import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Image,
   Platform,
+  RefreshControl,
   ScrollView,
   StatusBar,
   Text,
@@ -19,8 +20,15 @@ import {
 export default function HomeScreen() {
   const userName = 'Cat';
 
-  const { products } = useProducts();
+  const { products, fetchProducts } = useProducts();
+  const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProducts();
+    setRefreshing(false);
+  }, [fetchProducts]);
 
   const productDisplays = products.map(convertToProductDisplay);
 
@@ -63,7 +71,13 @@ export default function HomeScreen() {
           </Text>
         </View>
       </View>
-      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className='flex-1'
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Welcome Section */}
         <View className='px-5 py-6'>
           <Text className='text-3xl font-bold text-gray-800 dark:text-white'>
