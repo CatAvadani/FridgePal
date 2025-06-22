@@ -39,10 +39,9 @@ export default function RootLayout() {
         />
 
         <Stack.Screen
-          name='scanProduct'
+          name='cameraScreen'
           options={{
-            title: 'Scan Product',
-            headerBackTitle: '',
+            headerShown: false,
           }}
         />
         <Stack.Screen name='+not-found' />

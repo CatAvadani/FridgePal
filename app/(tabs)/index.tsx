@@ -1,16 +1,15 @@
-import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
+import ProductCard from '@/components/ProductCard';
+import QuickActions from '@/components/QuickActions';
 import { useProducts } from '@/contexts/ProductContext';
 import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Image,
   Platform,
+  RefreshControl,
   ScrollView,
   StatusBar,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import {
@@ -20,9 +19,16 @@ import {
 
 export default function HomeScreen() {
   const userName = 'Cat';
-  const router = useRouter();
-  const { products } = useProducts();
+
+  const { products, fetchProducts } = useProducts();
+  const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProducts();
+    setRefreshing(false);
+  }, [fetchProducts]);
 
   const productDisplays = products.map(convertToProductDisplay);
 
@@ -65,7 +71,13 @@ export default function HomeScreen() {
           </Text>
         </View>
       </View>
-      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className='flex-1'
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {/* Welcome Section */}
         <View className='px-5 py-6'>
           <Text className='text-3xl font-bold text-gray-800 dark:text-white'>
@@ -79,46 +91,8 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Quick Actions */}
-        <View className='px-5 mb-6'>
-          <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
-            Quick Actions
-          </Text>
-          <View className='flex-row gap-2'>
-            <TouchableOpacity
-              className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
-              onPress={() => router.push('/addProduct')}
-              style={{ elevation: 3 }}
-            >
-              <View
-                className='w-10 h-10 justify-center items-center bg-gray-100
-              dark:bg-slate-800 rounded-lg mr-3'
-              >
-                <MaterialIcons name='add' size={24} color='gray' />
-              </View>
-              <View className='flex-1'>
-                <Text className='text-base  font-semibold text-gray-800 dark:text-white'>
-                  Add Product
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
-              onPress={() => router.push('/scanProduct')}
-              style={{ elevation: 3 }}
-            >
-              <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800'>
-                <MaterialIcons name='camera-alt' size={24} color='gray' />
-              </View>
-              <View className='flex-1'>
-                <Text className='text-base font-semibold text-gray-800 dark:text-white'>
-                  Take Photo
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Quick Actions Buttons */}
+        <QuickActions />
 
         {/* Expiring Products List */}
         <View className='px-5 mb-6'>
@@ -127,26 +101,7 @@ export default function HomeScreen() {
           </Text>
 
           {expiringProducts.map((product) => (
-            <View
-              key={product.productId}
-              className='flex-row justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-lg mb-3'
-            >
-              <View className='flex-1'>
-                <Text className='text-base font-medium text-gray-800 dark:text-white'>
-                  {product.productName} ({product.quantity})
-                </Text>
-                <Text
-                  className={`text-sm mt-1 ${getExpiryColorClass(product.daysUntilExpiry)}`}
-                >
-                  {product.daysUntilExpiry === 0
-                    ? 'Expires today'
-                    : product.daysUntilExpiry === 1
-                      ? 'Expires tomorrow'
-                      : `Expires in ${product.daysUntilExpiry} days`}
-                </Text>
-              </View>
-              <MaterialIcons name='chevron-right' size={24} color='#999' />
-            </View>
+            <ProductCard key={product.productId} product={product} />
           ))}
         </View>
       </ScrollView>

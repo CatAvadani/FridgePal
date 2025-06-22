@@ -1,4 +1,4 @@
-import { createProduct, getProducts } from '@/services/api';
+import { createProduct, getProducts } from '@/services/productApi';
 import { Product, ProductDisplay } from '@/types/interfaces';
 import React, {
   createContext,
@@ -11,6 +11,7 @@ import React, {
 interface ProductContextValue {
   products: ProductDisplay[];
   addProduct: (product: Product) => void;
+  fetchProducts: () => Promise<void>;
 }
 
 const ProductContext = createContext({} as ProductContextValue);
@@ -33,7 +34,7 @@ export default function ProductProvider(props: PropsWithChildren) {
   }, []);
 
   return (
-    <ProductContext.Provider value={{ products, addProduct }}>
+    <ProductContext.Provider value={{ products, addProduct, fetchProducts }}>
       {props.children}
     </ProductContext.Provider>
   );
