@@ -1,16 +1,70 @@
-import { expiringItems, getExpiryColorClass } from '@/data/mockData';
+import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
+import { useProducts } from '@/contexts/ProductContext';
+import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Image,
+  Platform,
+  ScrollView,
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const userName = 'Cat';
   const router = useRouter();
+  const { products } = useProducts();
+  const insets = useSafeAreaInsets();
+
+  const productDisplays = products.map(convertToProductDisplay);
+
+  // Filter and sort products that are expiring within the next 10 days
+  const expiringProducts = productDisplays
+    .filter((p) => p.daysUntilExpiry <= 10)
+    .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
+
+  // Calculate the negative margin to extend image to top of screen
+  const imageMarginTop =
+    Platform.OS === 'ios' ? -insets.top : -(StatusBar.currentHeight ?? 0);
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
+      <StatusBar
+        barStyle='light-content'
+        backgroundColor='transparent'
+        translucent={true}
+      />
+      <View className='pb-2 items-center'>
+        <Image
+          source={require('@/assets/images/Fridge_image.png')}
+          className='w-full h-80 position-absolute top-0 left-0 right-0'
+          resizeMode='cover'
+          style={{ marginTop: imageMarginTop }}
+        />
+        <View
+          className='absolute top-0 left-0 right-0 h-80 bg-black opacity-40'
+          style={{ marginTop: imageMarginTop }}
+        />
+        <View
+          className='absolute top-0 left-0 right-0 h-72 items-center'
+          style={{ marginTop: imageMarginTop }}
+        >
+          <Text
+            className='text-3xl font-bold text-white'
+            style={{ paddingTop: insets.top + 20 }}
+          >
+            FridgePal
+          </Text>
+        </View>
+      </View>
       <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
         {/* Welcome Section */}
         <View className='px-5 py-6'>
@@ -18,7 +72,10 @@ export default function HomeScreen() {
             Welcome, {userName}!
           </Text>
           <Text className='text-base text-gray-600 mt-1 dark:text-gray-300'>
-            Manage your fridge efficiently
+            Keep your food fresh.
+          </Text>
+          <Text className='text-sm text-gray-600 mt-1 dark:text-gray-300'>
+            Manage your fridge inventory effortlessly.
           </Text>
         </View>
 
@@ -35,12 +92,12 @@ export default function HomeScreen() {
             >
               <View
                 className='w-10 h-10 justify-center items-center bg-gray-100
-              dark:bg-slate-800 rounded-full mr-3'
+              dark:bg-slate-800 rounded-lg mr-3'
               >
-                <MaterialIcons name='add' size={24} color='#2196F3' />
+                <MaterialIcons name='add' size={24} color='gray' />
               </View>
               <View className='flex-1'>
-                <Text className='text-base font-semibold text-gray-800 dark:text-white'>
+                <Text className='text-base  font-semibold text-gray-800 dark:text-white'>
                   Add Product
                 </Text>
               </View>
@@ -51,16 +108,12 @@ export default function HomeScreen() {
               onPress={() => router.push('/scanProduct')}
               style={{ elevation: 3 }}
             >
-              <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-full mr-3 dark:bg-slate-800'>
-                <MaterialIcons
-                  name='qr-code-scanner'
-                  size={24}
-                  color='#4CAF50'
-                />
+              <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800'>
+                <MaterialIcons name='camera-alt' size={24} color='gray' />
               </View>
               <View className='flex-1'>
                 <Text className='text-base font-semibold text-gray-800 dark:text-white'>
-                  Scan Product
+                  Take Photo
                 </Text>
               </View>
             </TouchableOpacity>
@@ -73,23 +126,23 @@ export default function HomeScreen() {
             Expiring Products
           </Text>
 
-          {expiringItems.map((item) => (
+          {expiringProducts.map((product) => (
             <View
-              key={item.id}
+              key={product.productId}
               className='flex-row justify-between items-center bg-white dark:bg-slate-800 p-4 rounded-lg mb-3'
             >
               <View className='flex-1'>
                 <Text className='text-base font-medium text-gray-800 dark:text-white'>
-                  {item.name}
+                  {product.productName} ({product.quantity})
                 </Text>
                 <Text
-                  className={`text-sm mt-1 ${getExpiryColorClass(item.daysUntilExpiry)}`}
+                  className={`text-sm mt-1 ${getExpiryColorClass(product.daysUntilExpiry)}`}
                 >
-                  {item.daysUntilExpiry === 0
+                  {product.daysUntilExpiry === 0
                     ? 'Expires today'
-                    : item.daysUntilExpiry === 1
+                    : product.daysUntilExpiry === 1
                       ? 'Expires tomorrow'
-                      : `Expires in ${item.daysUntilExpiry} days`}
+                      : `Expires in ${product.daysUntilExpiry} days`}
                 </Text>
               </View>
               <MaterialIcons name='chevron-right' size={24} color='#999' />

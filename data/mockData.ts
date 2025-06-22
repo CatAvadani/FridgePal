@@ -1,27 +1,124 @@
-interface ExpiringItem {
-  id: string;
-  name: string;
-  daysUntilExpiry: number;
-  category: string;
-}
+import { ProductDisplay } from '@/types/interfaces';
 
-export const expiringItems: ExpiringItem[] = [
-  { id: '1', name: 'Milk', daysUntilExpiry: 3, category: 'dairy' },
-  { id: '2', name: 'Eggs', daysUntilExpiry: 5, category: 'dairy' },
-  { id: '3', name: 'Butter', daysUntilExpiry: 7, category: 'dairy' },
-  { id: '4', name: 'Cheese', daysUntilExpiry: 10, category: 'dairy' },
-  { id: '5', name: 'Yogurt', daysUntilExpiry: 1, category: 'dairy' },
-  { id: '6', name: 'Chicken Breast', daysUntilExpiry: 2, category: 'meat' },
-  { id: '7', name: 'Ground Beef', daysUntilExpiry: 4, category: 'meat' },
-  { id: '8', name: 'Salmon Fillet', daysUntilExpiry: 0, category: 'fish' },
-  { id: '9', name: 'Broccoli', daysUntilExpiry: 6, category: 'vegetable' },
-  { id: '10', name: 'Carrots', daysUntilExpiry: 8, category: 'vegetable' },
+export const initialProducts: ProductDisplay[] = [
+  {
+    productId: '1',
+    userId: '123',
+    productName: 'Milk',
+    quantity: 1,
+    creationDate: '2025-06-12',
+    expirationDate: '2025-07-22',
+    notified: false,
+    categoryId: 1,
+    daysUntilExpiry: 10,
+    categoryName: 'Dairy',
+  },
+  {
+    productId: '2',
+    userId: '123',
+    productName: 'Chicken Breast',
+    quantity: 2,
+    creationDate: '2025-06-10',
+    expirationDate: '2025-07-20',
+    notified: false,
+    categoryId: 2,
+    daysUntilExpiry: 8,
+    categoryName: 'Meat',
+  },
+  {
+    productId: '3',
+    userId: '123',
+    productName: 'Broccoli',
+    quantity: 1,
+    creationDate: '2025-06-11',
+    expirationDate: '2025-07-21',
+    notified: false,
+    categoryId: 3,
+    daysUntilExpiry: 9,
+    categoryName: 'Vegetables',
+  },
+  {
+    productId: '4',
+    userId: '123',
+    productName: 'Apple',
+    quantity: 5,
+    creationDate: '2025-06-09',
+    expirationDate: '2025-07-19',
+    notified: false,
+    categoryId: 4,
+    daysUntilExpiry: 7,
+    categoryName: 'Fruits',
+  },
+  {
+    productId: '5',
+    userId: '123',
+    productName: 'Salmon Fillet',
+    quantity: 1,
+    creationDate: '2025-06-08',
+    expirationDate: '2025-06-28',
+    notified: false,
+    categoryId: 5,
+    daysUntilExpiry: 6,
+    categoryName: 'Fish',
+  },
+  {
+    productId: '6',
+    userId: '123',
+    productName: 'Orange Juice',
+    quantity: 1,
+    creationDate: '2025-06-07',
+    expirationDate: '2025-06-27',
+    notified: false,
+    categoryId: 6,
+    daysUntilExpiry: 5,
+    categoryName: 'Beverages',
+  },
+  {
+    productId: '7',
+    userId: '123',
+    productName: 'Frozen Peas',
+    quantity: 1,
+    creationDate: '2025-06-06',
+    expirationDate: '2025-06-26',
+    notified: false,
+    categoryId: 7,
+    daysUntilExpiry: 4,
+    categoryName: 'Frozen',
+  },
+  {
+    productId: '8',
+    userId: '123',
+    productName: 'Bread',
+    quantity: 1,
+    creationDate: '2025-06-05',
+    expirationDate: '2025-06-25',
+    notified: false,
+    categoryId: 8,
+    daysUntilExpiry: 3,
+    categoryName: 'Other',
+  },
+  {
+    productId: '9',
+    userId: '123',
+    productName: 'Yogurt',
+    quantity: 2,
+    creationDate: '2025-06-04',
+    expirationDate: '2025-06-24',
+    notified: false,
+    categoryId: 1,
+    daysUntilExpiry: 2,
+    categoryName: 'Dairy',
+  },
+  {
+    productId: '10',
+    userId: '123',
+    productName: 'Ground Beef',
+    quantity: 1,
+    creationDate: '2025-06-03',
+    expirationDate: '2025-06-23',
+    notified: false,
+    categoryId: 2,
+    daysUntilExpiry: 1,
+    categoryName: 'Meat',
+  },
 ];
-
-export const getExpiryColorClass = (days: number) => {
-  if (days <= 0) return 'text-red-700';
-  if (days <= 3) return 'text-red-500';
-  if (days <= 5) return 'text-orange-500';
-  if (days <= 7) return 'text-yellow-500';
-  return 'text-green-500';
-};
