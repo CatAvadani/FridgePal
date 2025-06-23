@@ -2,7 +2,7 @@ import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
 import { ProductDisplay } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -71,12 +71,22 @@ const ProductCard = ({
 
   const handleUpdate = () => {
     hideActions();
-    onUpdate(product);
+    Alert.alert(
+      'Edit functionality will be soon.',
+      'This feature is not yet implemented.'
+    );
+    // Todo: Uncomment the line below when the backend is ready
+    // onUpdate(product);
   };
 
   const handleDelete = () => {
     hideActions();
-    onDelete(product);
+    Alert.alert(
+      'Delete functionality will be available soon.',
+      'This feature is not yet implemented.'
+    );
+    // Todo: Uncomment the line below when the backend is ready
+    // onDelete(product);
   };
 
   return (
