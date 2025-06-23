@@ -19,7 +19,7 @@ export const mockSendToBackend = async (
     setTimeout(() => {
       resolve({
         productName: 'Mock Product',
-        expirationDate: '2025-06-23',
+        expirationDate: '2025-06-29',
         quantity: 1,
         categoryId: 1,
         categoryName: 'Dairy',
