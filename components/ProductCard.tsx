@@ -13,15 +13,15 @@ import Animated, {
 
 interface ProductCardProps {
   product: ProductDisplay;
-  onUpdate: (product: ProductDisplay) => void;
-  onDelete: (product: ProductDisplay) => void;
+  // onUpdate: (product: ProductDisplay) => void;
+  // onDelete: (product: ProductDisplay) => void;
   onTap?: (product: ProductDisplay) => void;
 }
 
 const ProductCard = ({
   product,
-  onUpdate,
-  onDelete,
+  // onUpdate,
+  // onDelete,
   onTap,
 }: ProductCardProps) => {
   const translateX = useSharedValue(0);
