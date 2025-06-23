@@ -2,6 +2,7 @@ import ProductProvider from '@/contexts/ProductContext';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import '../global.css';
 
@@ -19,34 +20,36 @@ const ExpiryColorPresets = () => (
 
 export default function RootLayout() {
   return (
-    <ProductProvider>
-      <ExpiryColorPresets />
+    <GestureHandlerRootView>
+      <ProductProvider>
+        <ExpiryColorPresets />
 
-      <Stack>
-        <Stack.Screen
-          name='(tabs)'
-          options={{ headerShown: false, title: '' }}
-        />
-        <Stack.Screen
-          name='addProduct'
-          options={{
-            title: 'Add Product',
-            headerTitleAlign: 'center',
-            headerBackTitle: '',
-            headerShown: false,
-            headerTintColor: 'black',
-          }}
-        />
+        <Stack>
+          <Stack.Screen
+            name='(tabs)'
+            options={{ headerShown: false, title: '' }}
+          />
+          <Stack.Screen
+            name='addProduct'
+            options={{
+              title: 'Add Product',
+              headerTitleAlign: 'center',
+              headerBackTitle: '',
+              headerShown: false,
+              headerTintColor: 'black',
+            }}
+          />
 
-        <Stack.Screen
-          name='cameraScreen'
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen name='+not-found' />
-      </Stack>
-      <StatusBar style='auto' />
-    </ProductProvider>
+          <Stack.Screen
+            name='cameraScreen'
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen name='+not-found' />
+        </Stack>
+        <StatusBar style='auto' />
+      </ProductProvider>
+    </GestureHandlerRootView>
   );
 }

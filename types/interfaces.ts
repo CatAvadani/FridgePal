@@ -33,6 +33,10 @@ export const CATEGORIES: Category[] = [
   { categoryId: 2, categoryName: 'Meat' },
   { categoryId: 3, categoryName: 'Vegetables' },
   { categoryId: 4, categoryName: 'Fruits' },
+  { categoryId: 5, categoryName: 'Fish' },
+  { categoryId: 6, categoryName: 'Beverages' },
+  { categoryId: 7, categoryName: 'Frozen' },
+  { categoryId: 8, categoryName: 'Other' },
 ];
 
 export const getCategoryName = (categoryId: number): string => {
