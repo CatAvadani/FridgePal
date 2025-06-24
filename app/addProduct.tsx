@@ -1,5 +1,5 @@
 import { useProducts } from '@/contexts/ProductContext';
-import { CATEGORIES, Product } from '@/types/interfaces';
+import { CATEGORIES, CreateProductRequest } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
@@ -27,7 +27,7 @@ export default function AddProductScreen() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!productName.trim()) {
       Alert.alert('Error', 'Please enter a product name');
       return;
@@ -44,27 +44,20 @@ export default function AddProductScreen() {
       return;
     }
 
-    // Create product object
-    const newProduct: Product = {
-      itemId: Date.now().toString(),
+    const newProduct: CreateProductRequest = {
       productName,
       quantity: quantityNum,
-      creationDate: new Date().toISOString(),
       expirationDate: expirationDate.toISOString(),
-      notified: false,
       categoryId,
     };
 
-    console.log('New product:', newProduct);
-
     try {
-      addProduct(newProduct);
+      await addProduct(newProduct);
       Alert.alert('Success', 'Product added successfully');
       router.back();
     } catch (error) {
       Alert.alert('Error', 'Failed to add product. Please try again.');
       console.error('Error adding product:', error);
-      return;
     }
   };
 
