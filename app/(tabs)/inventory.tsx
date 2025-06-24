@@ -117,9 +117,9 @@ export default function InventoryScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         className='flex-1 p-4 mb-16'
-        data={filteredProducts}
-        keyExtractor={(item) => item.productId.toString()}
-        renderItem={({ item }) => <ProductCard product={item} />}
+        data={filteredProducts.filter(Boolean)}
+        keyExtractor={(item) => item.itemId}
+        renderItem={({ item }) => item && <ProductCard product={item} />}
         ListEmptyComponent={() => (
           <View className='flex-1 justify-center items-center py-8'>
             <MaterialIcons name='inventory' size={48} color='#9CA3AF' />

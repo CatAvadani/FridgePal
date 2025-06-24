@@ -12,20 +12,26 @@ export interface Category {
 }
 
 export interface Product {
-  productId: string;
-  userId: string;
+  itemId: string;
   productName: string;
   quantity: number;
   creationDate: string;
   expirationDate: string;
   notified: boolean;
   categoryId: number;
-  imageUrl?: string;
+  categoryName?: string;
 }
 
 export interface ProductDisplay extends Product {
   daysUntilExpiry: number;
-  categoryName?: string;
+  imageUrl?: string;
+}
+
+export interface CreateProductRequest {
+  productName: string;
+  quantity: number;
+  expirationDate: string;
+  categoryId: number;
 }
 
 export const CATEGORIES: Category[] = [

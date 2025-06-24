@@ -29,21 +29,20 @@ export default function EditProductScreen() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const currentProduct = products.find(
-    (product) => product.productId === productId
-  );
-
   useEffect(() => {
+    if (!productId) return;
+
+    const currentProduct = products.find(
+      (product) => product.itemId === productId
+    );
+
     if (currentProduct) {
       setProductName(currentProduct.productName);
       setQuantity(currentProduct.quantity.toString());
       setExpirationDate(new Date(currentProduct.expirationDate));
       setCategoryId(currentProduct.categoryId);
-    } else {
-      Alert.alert('Error', 'Product not found');
-      router.back();
     }
-  }, [currentProduct]);
+  }, [products, productId]);
 
   const handleUpdate = async () => {
     if (!productName.trim()) {

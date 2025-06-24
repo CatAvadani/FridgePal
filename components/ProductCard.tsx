@@ -71,7 +71,7 @@ const ProductCard = ({ product, onTap }: ProductCardProps) => {
     hideActions();
     router.push({
       pathname: '/editProduct',
-      params: { productId: product.productId },
+      params: { productId: product.itemId },
     });
   };
 
@@ -90,7 +90,7 @@ const ProductCard = ({ product, onTap }: ProductCardProps) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteProduct(product.productId);
+              await deleteProduct(product.itemId);
               // Alert.alert('Success', 'Product deleted successfully');
             } catch (error) {
               Alert.alert(

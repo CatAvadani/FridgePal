@@ -1,7 +1,7 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
 import { useProducts } from '@/contexts/ProductContext';
-import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
+import { convertToProductDisplay } from '@/utils/productUtils';
 import React, { useCallback, useState } from 'react';
 import {
   Image,
@@ -101,7 +101,7 @@ export default function HomeScreen() {
           </Text>
 
           {expiringProducts.map((product) => (
-            <ProductCard key={product.productId} product={product} />
+            <ProductCard key={product.itemId} product={product} />
           ))}
         </View>
       </ScrollView>

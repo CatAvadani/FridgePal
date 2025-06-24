@@ -4,113 +4,142 @@ import {
   getProducts,
   updateProduct as updateProductApi,
 } from '@/services/productApi';
-import { Product, ProductDisplay } from '@/types/interfaces';
+import { CreateProductRequest, ProductDisplay } from '@/types/interfaces';
 import React, {
   createContext,
   PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
 interface ProductContextValue {
   products: ProductDisplay[];
   fetchProducts: () => Promise<void>;
-  addProduct: (product: Product) => Promise<void>;
+  addProduct: (productData: CreateProductRequest) => Promise<void>;
   updateProduct: (
-    productId: string,
-    updatedData: Partial<Product>
+    itemId: string,
+    updatedData: Partial<CreateProductRequest>
   ) => Promise<void>;
-  deleteProduct: (productId: string) => Promise<void>;
+  deleteProduct: (itemId: string) => Promise<void>;
   loading: boolean;
+  error: string | null;
 }
 
-const ProductContext = createContext({} as ProductContextValue);
+const ProductContext = createContext<ProductContextValue | undefined>(
+  undefined
+);
 
-export default function ProductProvider(props: PropsWithChildren) {
+export default function ProductProvider({ children }: PropsWithChildren) {
   const [products, setProducts] = useState<ProductDisplay[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getProducts();
       setProducts(data);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('[ProductContext] fetchProducts error:', error);
+      setError('Failed to fetch products. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addProduct = async (product: Product) => {
+  const addProduct = useCallback(async (productData: CreateProductRequest) => {
     try {
       setLoading(true);
-      const newProduct = await createProduct(product);
+      setError(null);
+      const newProduct = await createProduct(productData);
       setProducts((prev) => [...prev, newProduct]);
     } catch (error) {
-      console.error('Error adding product:', error);
+      console.error('[ProductContext] addProduct error:', error);
+      setError('Failed to add product. Please try again.');
       throw error;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateProduct = async (
-    productId: string,
-    updatedData: Partial<Product>
-  ) => {
+  const updateProduct = useCallback(
+    async (itemId: string, updatedData: Partial<CreateProductRequest>) => {
+      try {
+        setLoading(true);
+        setError(null);
+        await updateProductApi(itemId, updatedData);
+
+        const refreshedProducts = await getProducts();
+        setProducts(refreshedProducts);
+      } catch (error) {
+        console.error('[ProductContext] updateProduct error:', error);
+        setError('Failed to update product.');
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const deleteProduct = useCallback(async (itemId: string) => {
     try {
       setLoading(true);
-      const updatedProduct = await updateProductApi(productId, updatedData);
+      setError(null);
+      await deleteProductApi(itemId);
 
       setProducts((prev) =>
-        prev.map((product) =>
-          product.productId === productId ? updatedProduct : product
-        )
+        prev.filter((product) => product.itemId !== itemId)
       );
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('[ProductContext] deleteProduct error:', error);
+      setError('Failed to delete product. Please try again.');
       throw error;
     } finally {
       setLoading(false);
     }
-  };
-
-  const deleteProduct = async (productId: string) => {
-    try {
-      setLoading(true);
-      await deleteProductApi(productId);
-
-      setProducts((prev) =>
-        prev.filter((product) => product.productId !== productId)
-      );
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
+
+  const contextValue = useMemo(
+    () => ({
+      products,
+      addProduct,
+      fetchProducts,
+      updateProduct,
+      deleteProduct,
+      loading,
+      error,
+    }),
+    [
+      products,
+      addProduct,
+      fetchProducts,
+      updateProduct,
+      deleteProduct,
+      loading,
+      error,
+    ]
+  );
 
   return (
-    <ProductContext.Provider
-      value={{
-        products,
-        addProduct,
-        fetchProducts,
-        updateProduct,
-        deleteProduct,
-        loading,
-      }}
-    >
-      {props.children}
+    <ProductContext.Provider value={contextValue}>
+      {children}
     </ProductContext.Provider>
   );
 }
 
-export const useProducts = () => useContext(ProductContext);
+export const useProducts = (): ProductContextValue => {
+  const context = useContext(ProductContext);
+  if (!context) {
+    throw new Error('useProducts must be used within a ProductProvider');
+  }
+  return context;
+};
