@@ -46,8 +46,7 @@ export default function AddProductScreen() {
 
     // Create product object
     const newProduct: Product = {
-      productId: Date.now().toString(),
-      userId: '123',
+      itemId: Date.now().toString(),
       productName,
       quantity: quantityNum,
       creationDate: new Date().toISOString(),
