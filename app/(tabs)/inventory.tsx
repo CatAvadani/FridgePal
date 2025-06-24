@@ -116,7 +116,7 @@ export default function InventoryScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        className='flex-1 p-4'
+        className='flex-1 p-4 mb-16'
         data={filteredProducts}
         keyExtractor={(item) => item.productId.toString()}
         renderItem={({ item }) => <ProductCard product={item} />}

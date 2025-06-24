@@ -95,7 +95,7 @@ export default function HomeScreen() {
         <QuickActions />
 
         {/* Expiring Products List */}
-        <View className='px-5 mb-6'>
+        <View className='px-5 mb-16'>
           <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
             Expiring Products
           </Text>
