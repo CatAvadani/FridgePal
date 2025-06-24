@@ -7,11 +7,8 @@ const QuickActions = () => {
   const router = useRouter();
 
   return (
-    <View className='px-5 mb-6'>
-      <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
-        Quick Actions
-      </Text>
-      <View className='flex-row gap-2'>
+    <View className='px-2 mb-6'>
+      <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700'>
         <TouchableOpacity
           className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
           onPress={() => router.push('/addProduct')}
@@ -24,7 +21,7 @@ const QuickActions = () => {
             <MaterialIcons name='add' size={24} color='#ff5733' />
           </View>
           <View className='flex-1'>
-            <Text className='text-base  font-semibold text-gray-800 dark:text-white'>
+            <Text className='text-base  font-bold text-gray-800 dark:text-white'>
               Add Product
             </Text>
           </View>
@@ -39,7 +36,7 @@ const QuickActions = () => {
             <MaterialIcons name='camera-alt' size={24} color='#ff5733' />
           </View>
           <View className='flex-1'>
-            <Text className='text-base font-semibold text-gray-800 dark:text-white'>
+            <Text className='text-base font-bold text-gray-800 dark:text-white'>
               Take Photo
             </Text>
           </View>

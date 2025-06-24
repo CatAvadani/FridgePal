@@ -1,6 +1,8 @@
 import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
+import { useProducts } from '@/contexts/ProductContext';
 import { ProductDisplay } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -13,17 +15,13 @@ import Animated, {
 
 interface ProductCardProps {
   product: ProductDisplay;
-  // onUpdate: (product: ProductDisplay) => void;
-  // onDelete: (product: ProductDisplay) => void;
   onTap?: (product: ProductDisplay) => void;
 }
 
-const ProductCard = ({
-  product,
-  // onUpdate,
-  // onDelete,
-  onTap,
-}: ProductCardProps) => {
+const ProductCard = ({ product, onTap }: ProductCardProps) => {
+  const router = useRouter();
+  const { deleteProduct } = useProducts();
+
   const translateX = useSharedValue(0);
   const context = useSharedValue({ x: 0 });
 
@@ -71,22 +69,40 @@ const ProductCard = ({
 
   const handleUpdate = () => {
     hideActions();
-    Alert.alert(
-      'Edit functionality will be soon.',
-      'This feature is not yet implemented.'
-    );
-    // Todo: Uncomment the line below when the backend is ready
-    // onUpdate(product);
+    router.push({
+      pathname: '/editProduct',
+      params: { productId: product.productId },
+    });
   };
 
   const handleDelete = () => {
     hideActions();
     Alert.alert(
-      'Delete functionality will be available soon.',
-      'This feature is not yet implemented.'
+      'Delete Product',
+      `Are you sure you want to delete "${product.productName}"? This action cannot be undone.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteProduct(product.productId);
+              // Alert.alert('Success', 'Product deleted successfully');
+            } catch (error) {
+              Alert.alert(
+                'Error',
+                'Failed to delete product. Please try again.'
+              );
+              console.error('Error deleting product:', error);
+            }
+          },
+        },
+      ]
     );
-    // Todo: Uncomment the line below when the backend is ready
-    // onDelete(product);
   };
 
   return (
@@ -138,7 +154,7 @@ const ProductCard = ({
             <MaterialIcons
               name='keyboard-double-arrow-left'
               size={20}
-              className='text-gray-500 dark:text-gray-400'
+              className='text-gray-500 dark:text-gray-400 mr-2'
             />
           </View>
         </Animated.View>

@@ -17,3 +17,39 @@ export const createProduct = async (
   mockProducts.push(newProduct);
   return convertToProductDisplay(newProduct);
 };
+
+export const updateProduct = async (
+  productId: string,
+  updatedData: Partial<Product>
+): Promise<ProductDisplay> => {
+  await delay();
+
+  const productIndex = mockProducts.findIndex(
+    (product) => product.productId === productId
+  );
+
+  if (productIndex === -1) {
+    throw new Error('Product not found');
+  }
+
+  mockProducts[productIndex] = {
+    ...mockProducts[productIndex],
+    ...updatedData,
+  };
+
+  return convertToProductDisplay(mockProducts[productIndex]);
+};
+
+export const deleteProduct = async (productId: string): Promise<void> => {
+  await delay();
+
+  const productIndex = mockProducts.findIndex(
+    (product) => product.productId === productId
+  );
+
+  if (productIndex === -1) {
+    throw new Error('Product not found');
+  }
+
+  mockProducts.splice(productIndex, 1);
+};

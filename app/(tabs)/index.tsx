@@ -48,7 +48,7 @@ export default function HomeScreen() {
         backgroundColor='transparent'
         translucent={true}
       />
-      <View className='pb-2 items-center'>
+      <View className=' items-center'>
         <Image
           source={require('@/assets/images/Fridge_image.png')}
           className='w-full h-80 position-absolute top-0 left-0 right-0'
