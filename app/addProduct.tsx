@@ -82,7 +82,10 @@ export default function AddProductScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className='flex-1'
       >
-        <ScrollView className='flex-1 px-5 py-6'>
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 300 }}
+          className='flex-1 px-5 py-6'
+        >
           {/* Product Name Input */}
           <View className='mb-6'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
@@ -120,7 +123,9 @@ export default function AddProductScreen() {
 
             <TouchableOpacity
               className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
-              onPress={() => setDropdownOpen((prev) => !prev)}
+              onPress={() => {
+                setDropdownOpen((prev) => !prev);
+              }}
             >
               <Text className='text-gray-400 dark:text-white'>
                 {categoryId
