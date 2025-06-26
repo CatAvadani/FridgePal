@@ -1,7 +1,7 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
 import { useProducts } from '@/contexts/ProductContext';
-import { convertToProductDisplay } from '@/utils/convertToProductDisplay';
+import { convertToProductDisplay } from '@/utils/productUtils';
 import React, { useCallback, useState } from 'react';
 import {
   Image,
@@ -48,7 +48,7 @@ export default function HomeScreen() {
         backgroundColor='transparent'
         translucent={true}
       />
-      <View className='pb-2 items-center'>
+      <View className=' items-center'>
         <Image
           source={require('@/assets/images/Fridge_image.png')}
           className='w-full h-80 position-absolute top-0 left-0 right-0'
@@ -95,13 +95,13 @@ export default function HomeScreen() {
         <QuickActions />
 
         {/* Expiring Products List */}
-        <View className='px-5 mb-6'>
+        <View className='px-5 mb-16'>
           <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
             Expiring Products
           </Text>
 
           {expiringProducts.map((product) => (
-            <ProductCard key={product.productId} product={product} />
+            <ProductCard key={product.itemId} product={product} />
           ))}
         </View>
       </ScrollView>

@@ -1,9 +1,11 @@
 import { useProducts } from '@/contexts/ProductContext';
-import { CATEGORIES, CreateProductRequest } from '@/types/interfaces';
+import { CATEGORIES, Product } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
   Alert,
   KeyboardAvoidingView,
@@ -14,11 +16,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
-export default function AddProductScreen() {
-  const router = useRouter();
-  const { addProduct } = useProducts();
+export default function EditProductScreen() {
+  const { productId } = useLocalSearchParams();
+  const { products, updateProduct } = useProducts();
 
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -26,8 +27,24 @@ export default function AddProductScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = async () => {
+  useEffect(() => {
+    if (!productId) return;
+
+    const currentProduct = products.find(
+      (product) => product.itemId === productId
+    );
+
+    if (currentProduct) {
+      setProductName(currentProduct.productName);
+      setQuantity(currentProduct.quantity.toString());
+      setExpirationDate(new Date(currentProduct.expirationDate));
+      setCategoryId(currentProduct.categoryId);
+    }
+  }, [products, productId]);
+
+  const handleUpdate = async () => {
     if (!productName.trim()) {
       Alert.alert('Error', 'Please enter a product name');
       return;
@@ -44,26 +61,29 @@ export default function AddProductScreen() {
       return;
     }
 
-    const newProduct: CreateProductRequest = {
-      productName,
-      quantity: quantityNum,
-      expirationDate: expirationDate.toISOString(),
-      categoryId,
-    };
-
     try {
-      await addProduct(newProduct);
-      Alert.alert('Success', 'Product added successfully');
+      setLoading(true);
+
+      const updatedData: Partial<Product> = {
+        productName,
+        quantity: quantityNum,
+        expirationDate: expirationDate.toISOString(),
+        categoryId,
+      };
+
+      await updateProduct(productId as string, updatedData);
+      Alert.alert('Success', 'Product updated successfully');
       router.back();
     } catch (error) {
-      Alert.alert('Error', 'Failed to add product. Please try again.');
-      console.error('Error adding product:', error);
+      Alert.alert('Error', 'Failed to update product. Please try again.');
+      console.error('Error updating product:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
-      {/* Custom Header */}
       <View className='bg-transparent dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
         <View className='flex-row items-center justify-between px-4 py-3'>
           <TouchableOpacity onPress={() => router.back()} className='p-2'>
@@ -71,7 +91,7 @@ export default function AddProductScreen() {
           </TouchableOpacity>
 
           <Text className='text-2xl font-semibold text-gray-900 dark:text-white'>
-            Add Product
+            Edit Product
           </Text>
 
           <View className='w-10' />
@@ -82,10 +102,7 @@ export default function AddProductScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className='flex-1'
       >
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 300 }}
-          className='flex-1 px-5 py-6'
-        >
+        <ScrollView className='flex-1 px-5 py-6'>
           {/* Product Name Input */}
           <View className='mb-6'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
@@ -123,9 +140,7 @@ export default function AddProductScreen() {
 
             <TouchableOpacity
               className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
-              onPress={() => {
-                setDropdownOpen((prev) => !prev);
-              }}
+              onPress={() => setDropdownOpen((prev) => !prev)}
             >
               <Text className='text-gray-400 dark:text-white'>
                 {categoryId
@@ -200,9 +215,11 @@ export default function AddProductScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               className='flex-1 button-primary p-4 rounded-lg'
-              onPress={handleSave}
+              onPress={handleUpdate}
             >
-              <Text className='text-center text-white font-semibold'>Save</Text>
+              <Text className='text-center text-white font-semibold'>
+                Update
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

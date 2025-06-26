@@ -39,7 +39,16 @@ export default function RootLayout() {
               headerTintColor: 'black',
             }}
           />
-
+          <Stack.Screen
+            name='editProduct'
+            options={{
+              title: 'Edit Product',
+              headerTitleAlign: 'center',
+              headerBackTitle: '',
+              headerShown: false,
+              headerTintColor: 'black',
+            }}
+          />
           <Stack.Screen
             name='cameraScreen'
             options={{

@@ -1,43 +1,145 @@
-import { createProduct, getProducts } from '@/services/productApi';
-import { Product, ProductDisplay } from '@/types/interfaces';
+import {
+  createProduct,
+  deleteProduct as deleteProductApi,
+  getProducts,
+  updateProduct as updateProductApi,
+} from '@/services/productApi';
+import { CreateProductRequest, ProductDisplay } from '@/types/interfaces';
 import React, {
   createContext,
   PropsWithChildren,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
 interface ProductContextValue {
   products: ProductDisplay[];
-  addProduct: (product: Product) => void;
   fetchProducts: () => Promise<void>;
+  addProduct: (productData: CreateProductRequest) => Promise<void>;
+  updateProduct: (
+    itemId: string,
+    updatedData: Partial<CreateProductRequest>
+  ) => Promise<void>;
+  deleteProduct: (itemId: string) => Promise<void>;
+  loading: boolean;
+  error: string | null;
 }
 
-const ProductContext = createContext({} as ProductContextValue);
+const ProductContext = createContext<ProductContextValue | undefined>(
+  undefined
+);
 
-export default function ProductProvider(props: PropsWithChildren) {
+export default function ProductProvider({ children }: PropsWithChildren) {
   const [products, setProducts] = useState<ProductDisplay[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
-    const data = await getProducts();
-    setProducts(data);
-  };
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error('[ProductContext] fetchProducts error:', error);
+      setError('Failed to fetch products. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const addProduct = async (product: Product) => {
-    const newProduct = await createProduct(product);
-    setProducts((prev) => [...prev, newProduct]);
-  };
+  const addProduct = useCallback(async (productData: CreateProductRequest) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const newProduct = await createProduct(productData);
+      setProducts((prev) => [...prev, newProduct]);
+    } catch (error) {
+      console.error('[ProductContext] addProduct error:', error);
+      setError('Failed to add product. Please try again.');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateProduct = useCallback(
+    async (itemId: string, updatedData: Partial<CreateProductRequest>) => {
+      try {
+        setLoading(true);
+        setError(null);
+        await updateProductApi(itemId, updatedData);
+
+        const refreshedProducts = await getProducts();
+        setProducts(refreshedProducts);
+      } catch (error) {
+        console.error('[ProductContext] updateProduct error:', error);
+        setError('Failed to update product.');
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const deleteProduct = useCallback(async (itemId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      await deleteProductApi(itemId);
+
+      setProducts((prev) =>
+        prev.filter((product) => product.itemId !== itemId)
+      );
+    } catch (error) {
+      console.error('[ProductContext] deleteProduct error:', error);
+      setError('Failed to delete product. Please try again.');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
+
+  const contextValue = useMemo(
+    () => ({
+      products,
+      addProduct,
+      fetchProducts,
+      updateProduct,
+      deleteProduct,
+      loading,
+      error,
+    }),
+    [
+      products,
+      addProduct,
+      fetchProducts,
+      updateProduct,
+      deleteProduct,
+      loading,
+      error,
+    ]
+  );
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, fetchProducts }}>
-      {props.children}
+    <ProductContext.Provider value={contextValue}>
+      {children}
     </ProductContext.Provider>
   );
 }
 
-export const useProducts = () => useContext(ProductContext);
+export const useProducts = (): ProductContextValue => {
+  const context = useContext(ProductContext);
+  if (!context) {
+    throw new Error('useProducts must be used within a ProductProvider');
+  }
+  return context;
+};
