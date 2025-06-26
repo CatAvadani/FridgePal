@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:5270';
+const IP_ADDRESS = process.env.EXPO_PUBLIC_IP_ADDRESS || 'localhost';
+
+const API_BASE_URL = `http://${IP_ADDRESS}:7024`;
 
 export const ENDPOINTS = {
   GET_ALL: '/api/Item/getAllItems',
