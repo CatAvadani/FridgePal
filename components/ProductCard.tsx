@@ -213,11 +213,13 @@ const ProductCard = ({
               <Text
                 className={`text-sm mt-1 ${getExpiryColorClass(product.daysUntilExpiry)}`}
               >
-                {product.daysUntilExpiry === 0
-                  ? 'Expires today'
-                  : product.daysUntilExpiry === 1
-                    ? 'Expires tomorrow'
-                    : `Expires in ${product.daysUntilExpiry} days`}
+                {product.daysUntilExpiry < 0
+                  ? `Expired ${Math.abs(product.daysUntilExpiry)} ${Math.abs(product.daysUntilExpiry) === 1 ? 'day' : 'days'} ago`
+                  : product.daysUntilExpiry === 0
+                    ? 'Expires today'
+                    : product.daysUntilExpiry === 1
+                      ? 'Expires tomorrow'
+                      : `Expires in ${product.daysUntilExpiry} days`}
               </Text>
             </View>
 
