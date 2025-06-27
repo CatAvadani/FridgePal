@@ -100,8 +100,12 @@ export default function HomeScreen() {
             Expiring Products
           </Text>
 
-          {expiringProducts.map((product) => (
-            <ProductCard key={product.itemId} product={product} />
+          {expiringProducts.map((product, index) => (
+            <ProductCard
+              key={product.itemId}
+              product={product}
+              isFirstCard={index === 0}
+            />
           ))}
         </View>
       </ScrollView>
