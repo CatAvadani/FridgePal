@@ -6,20 +6,24 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAlert } from '@/hooks/useCustomAlert';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from 'react-native';
 
 export default function EditProductScreen() {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const { productId } = useLocalSearchParams();
   const { products, updateProduct } = useProducts();
+  const { showAlert } = useAlert();
 
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -46,18 +50,27 @@ export default function EditProductScreen() {
 
   const handleUpdate = async () => {
     if (!productName.trim()) {
-      Alert.alert('Error', 'Please enter a product name');
+      showAlert({
+        title: 'Error',
+        message: 'Please enter a product name',
+      });
       return;
     }
 
     const quantityNum = parseInt(quantity);
     if (!quantity.trim() || isNaN(quantityNum) || quantityNum <= 0) {
-      Alert.alert('Error', 'Please enter a valid quantity (greater than 0)');
+      showAlert({
+        title: 'Error',
+        message: 'Please enter a valid quantity (greater than 0)',
+      });
       return;
     }
 
     if (!categoryId) {
-      Alert.alert('Error', 'Please select a category');
+      showAlert({
+        title: 'Error',
+        message: 'Please select a category',
+      });
       return;
     }
 
@@ -72,11 +85,16 @@ export default function EditProductScreen() {
       };
 
       await updateProduct(productId as string, updatedData);
-      Alert.alert('Success', 'Product updated successfully');
+      showAlert({
+        title: 'Success',
+        message: 'Product updated successfully',
+      });
       router.back();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update product. Please try again.');
-      console.error('Error updating product:', error);
+    } catch {
+      showAlert({
+        title: 'Error',
+        message: 'Failed to update product. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -84,10 +102,14 @@ export default function EditProductScreen() {
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
-      <View className='bg-transparent dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
+      <View className='bg-transparent  border-b border-gray-200 dark:border-gray-700'>
         <View className='flex-row items-center justify-between px-4 py-3'>
           <TouchableOpacity onPress={() => router.back()} className='p-2'>
-            <MaterialIcons name='arrow-back' size={24} color='#000' />
+            <MaterialIcons
+              name='arrow-back'
+              size={24}
+              color={isDarkMode ? 'gray' : 'black'}
+            />
           </TouchableOpacity>
 
           <Text className='text-2xl font-semibold text-gray-900 dark:text-white'>
@@ -206,10 +228,10 @@ export default function EditProductScreen() {
           {/* Action Buttons */}
           <View className='flex-row gap-4 mt-8'>
             <TouchableOpacity
-              className='flex-1 button-secondary border border-primary  dark:bg-gray-700 p-4 rounded-lg'
+              className='flex-1 button-secondary border border-primary  dark:bg-transparent p-4 rounded-lg'
               onPress={() => router.back()}
             >
-              <Text className='text-center text-primary dark:text-gray-300 font-semibold'>
+              <Text className='text-center text-primary font-semibold'>
                 Cancel
               </Text>
             </TouchableOpacity>

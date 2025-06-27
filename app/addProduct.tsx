@@ -1,24 +1,28 @@
 import { useProducts } from '@/contexts/ProductContext';
+import { useAlert } from '@/hooks/useCustomAlert';
 import { CATEGORIES, CreateProductRequest } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AddProductScreen() {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const router = useRouter();
   const { addProduct } = useProducts();
+  const { showAlert } = useAlert();
 
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -29,18 +33,27 @@ export default function AddProductScreen() {
 
   const handleSave = async () => {
     if (!productName.trim()) {
-      Alert.alert('Error', 'Please enter a product name');
+      showAlert({
+        title: 'Error',
+        message: 'Please enter a product name',
+      });
       return;
     }
 
     const quantityNum = parseInt(quantity);
     if (!quantity.trim() || isNaN(quantityNum) || quantityNum <= 0) {
-      Alert.alert('Error', 'Please enter a valid quantity (greater than 0)');
+      showAlert({
+        title: 'Error',
+        message: 'Please enter a valid quantity (greater than 0)',
+      });
       return;
     }
 
     if (!categoryId) {
-      Alert.alert('Error', 'Please select a category');
+      showAlert({
+        title: 'Error',
+        message: 'Please select a category',
+      });
       return;
     }
 
@@ -53,21 +66,30 @@ export default function AddProductScreen() {
 
     try {
       await addProduct(newProduct);
-      Alert.alert('Success', 'Product added successfully');
+      showAlert({
+        title: 'Success',
+        message: 'Product added successfully',
+      });
       router.back();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to add product. Please try again.');
-      console.error('Error adding product:', error);
+    } catch {
+      showAlert({
+        title: 'Error',
+        message: 'Failed to add product. Please try again.',
+      });
     }
   };
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
       {/* Custom Header */}
-      <View className='bg-transparent dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
+      <View className='bg-transparent border-b border-gray-200 dark:border-gray-700 '>
         <View className='flex-row items-center justify-between px-4 py-3'>
           <TouchableOpacity onPress={() => router.back()} className='p-2'>
-            <MaterialIcons name='arrow-back' size={24} color='#000' />
+            <MaterialIcons
+              name='arrow-back'
+              size={24}
+              color={isDarkMode ? 'gray' : 'black'}
+            />
           </TouchableOpacity>
 
           <Text className='text-2xl font-semibold text-gray-900 dark:text-white'>
@@ -87,7 +109,7 @@ export default function AddProductScreen() {
           className='flex-1 px-5 py-6'
         >
           {/* Product Name Input */}
-          <View className='mb-6'>
+          <View className='mb-6 '>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Product Name
             </Text>
@@ -191,10 +213,10 @@ export default function AddProductScreen() {
           {/* Action Buttons */}
           <View className='flex-row gap-4 mt-8'>
             <TouchableOpacity
-              className='flex-1 button-secondary border border-primary  dark:bg-gray-700 p-4 rounded-lg'
+              className='flex-1 button-secondary border border-primary dark:bg-transparent p-4 rounded-lg'
               onPress={() => router.back()}
             >
-              <Text className='text-center text-primary dark:text-gray-300 font-semibold'>
+              <Text className='text-center text-primary font-semibold'>
                 Cancel
               </Text>
             </TouchableOpacity>

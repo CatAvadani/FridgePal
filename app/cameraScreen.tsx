@@ -1,12 +1,12 @@
 import CameraZoomControls from '@/components/CameraZoomControls';
 import { useProducts } from '@/contexts/ProductContext';
+import { useAlert } from '@/hooks/useCustomAlert';
 import { mockSendToBackend } from '@/services/cameraApi';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  Alert,
   PanResponder,
   StyleSheet,
   Text,
@@ -22,6 +22,7 @@ export default function CameraScreen() {
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
   const { addProduct } = useProducts();
+  const { showAlert } = useAlert();
 
   // Pinch to zoom handler
   const pinchGesture = useRef(
@@ -108,14 +109,16 @@ export default function CameraScreen() {
 
         addProduct(newProduct);
 
-        Alert.alert(
-          'Product recognized!',
-          `Name: ${response.productName}\nExpires: ${response.expirationDate}`
-        );
+        showAlert({
+          title: 'Product recognized!',
+          message: `Name: ${response.productName}\nExpires: ${response.expirationDate}`,
+        });
         router.back();
-      } catch (error) {
-        console.error('Error taking picture:', error);
-        Alert.alert('Error', 'Failed to take picture');
+      } catch {
+        showAlert({
+          title: 'Error',
+          message: 'Failed to take picture. Please try again.',
+        });
       }
     }
   };
