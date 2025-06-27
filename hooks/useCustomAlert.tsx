@@ -32,7 +32,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
   const handleDismiss = useCallback(() => {
     setVisible(false);
-    setTimeout(() => setOptions(null), 350); // Let the dialog fade out
+    setTimeout(() => setOptions(null), 350);
   }, []);
 
   return (

@@ -36,7 +36,7 @@ export default function CustomAlert({
       surface: isDarkMode ? '#1F2937' : '#FFFFFF',
       onSurface: isDarkMode ? '#F9FAFB' : '#1F2937',
       onSurfaceVariant: isDarkMode ? '#9CA3AF' : '#6B7280',
-      backdrop: 'rgba(0, 0, 0, 0.4)',
+      backdrop: 'rgba(0, 0, 0, 0.6)',
       error: '#EF4444',
       border: isDarkMode ? '#374151' : '#E5E7EB',
       cancel: isDarkMode ? '#6B7280' : '#9CA3AF',
