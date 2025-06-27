@@ -1,12 +1,12 @@
 import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
 import { useProducts } from '@/contexts/ProductContext';
+import { useAlert } from '@/hooks/useCustomAlert';
 import { ProductDisplay } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Alert,
   Image,
   Text,
   TouchableOpacity,
@@ -41,6 +41,8 @@ const ProductCard = ({
   const router = useRouter();
   const { deleteProduct } = useProducts();
   const [hasSeenDemo, setHasSeenDemo] = useState(true);
+
+  const { showAlert } = useAlert();
 
   const translateX = useSharedValue(0);
   const context = useSharedValue({ x: 0 });
@@ -149,10 +151,11 @@ const ProductCard = ({
 
   const handleDelete = () => {
     hideActions();
-    Alert.alert(
-      'Delete Product',
-      `Are you sure you want to delete "${product.productName}"? This action cannot be undone.`,
-      [
+    showAlert({
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${product.productName}"? This action cannot be undone.`,
+      icon: 'delete-forever',
+      buttons: [
         {
           text: 'Cancel',
           style: 'cancel',
@@ -163,17 +166,25 @@ const ProductCard = ({
           onPress: async () => {
             try {
               await deleteProduct(product.itemId);
+              showAlert({
+                title: 'Deleted!',
+                message: 'Product deleted successfully.',
+                icon: 'check-circle',
+                buttons: [{ text: 'OK', style: 'default' }],
+              });
             } catch (error) {
-              Alert.alert(
-                'Error',
-                'Failed to delete product. Please try again.'
-              );
+              showAlert({
+                title: 'Error',
+                message: 'Failed to delete product. Please try again.',
+                icon: 'alert-circle',
+                buttons: [{ text: 'OK', style: 'default' }],
+              });
               console.error('Error deleting product:', error);
             }
           },
         },
-      ]
-    );
+      ],
+    });
   };
 
   return (
