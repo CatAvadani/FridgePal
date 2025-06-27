@@ -5,7 +5,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -37,6 +44,9 @@ const ProductCard = ({
 
   const translateX = useSharedValue(0);
   const context = useSharedValue({ x: 0 });
+
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   const startDemoAnimation = useCallback(async () => {
     try {
@@ -191,7 +201,7 @@ const ProductCard = ({
 
       {/* Demo Hint only show during first-time demo */}
       {isFirstCard && !hasSeenDemo && (
-        <View className='absolute -top-8 left-4 bg-black px-3 py-1 rounded-full z-10'>
+        <View className='absolute -top-8 left-4 bg-black  px-3 py-1 rounded-full z-10'>
           <Text className='text-white text-xs font-medium'>
             Swipe cards for options!
           </Text>
@@ -201,7 +211,7 @@ const ProductCard = ({
       {/* Main Card */}
       <GestureDetector gesture={composed}>
         <Animated.View style={animatedStyle}>
-          <View className='flex-row justify-between items-center bg-white dark:bg-slate-800 rounded-lg gap-4'>
+          <View className='flex-row justify-between items-center bg-white dark:bg-gray-800 rounded-lg gap-4'>
             <Image
               source={{ uri: product.imageUrl }}
               className='w-20 h-20 object-cover rounded-lg'
@@ -226,7 +236,8 @@ const ProductCard = ({
             <MaterialIcons
               name='keyboard-double-arrow-left'
               size={20}
-              className='text-gray-500 dark:text-gray-400 mr-2'
+              color={isDarkMode ? 'gray' : 'black'}
+              className=' mr-2'
             />
           </View>
         </Animated.View>

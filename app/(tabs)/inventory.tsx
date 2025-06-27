@@ -12,6 +12,7 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from 'react-native';
 
@@ -21,6 +22,9 @@ export default function InventoryScreen() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null
   );
+
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -52,7 +56,11 @@ export default function InventoryScreen() {
       <View className='bg-transparent  dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4'>
         <View className={headerClassName}>
           <TouchableOpacity onPress={() => router.back()} className='p-2'>
-            <MaterialIcons name='arrow-back' size={24} color='#000' />
+            <MaterialIcons
+              name='arrow-back'
+              size={24}
+              color={isDarkMode ? 'gray' : '#000'}
+            />
           </TouchableOpacity>
           <Text className='text-2xl font-bold text-gray-800 dark:text-white '>
             Inventory

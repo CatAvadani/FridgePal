@@ -8,7 +8,7 @@ const QuickActions = () => {
 
   return (
     <View className='px-2 mb-6'>
-      <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700'>
+      <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700/20'>
         <TouchableOpacity
           className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
           onPress={() => router.push('/addProduct')}

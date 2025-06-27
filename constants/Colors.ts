@@ -6,7 +6,7 @@ export const colors = {
     inactive: '#6B7280',
   },
   dark: {
-    tint: '#60A5FA',
+    tint: '#FF5733',
     background: '#1F2937',
     text: '#F9FAFB',
     inactive: '#9CA3AF',
