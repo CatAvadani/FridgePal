@@ -68,7 +68,7 @@ const ProductCard = ({
         })
       ),
       withDelay(
-        1500,
+        500,
         withSpring(0, {
           duration: 600,
           dampingRatio: 0.8,
@@ -209,15 +209,6 @@ const ProductCard = ({
           <Text className='text-white text-xs mt-1 font-medium'>Delete</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Demo Hint only show during first-time demo */}
-      {isFirstCard && !hasSeenDemo && (
-        <View className='absolute -top-8 left-4 bg-black  px-3 py-1 rounded-full z-10'>
-          <Text className='text-white text-xs font-medium'>
-            Swipe cards for options!
-          </Text>
-        </View>
-      )}
 
       {/* Main Card */}
       <GestureDetector gesture={composed}>
