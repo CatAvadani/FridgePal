@@ -1,13 +1,13 @@
 import CameraZoomControls from '@/components/CameraZoomControls';
-import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
-import { mockSendToBackend } from '@/services/cameraApi';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
   PanResponder,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,7 +21,6 @@ export default function CameraScreen() {
   const [showZoomSlider, setShowZoomSlider] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
-  const { addProduct } = useProducts();
   const { showAlert } = useAlert();
 
   // Pinch to zoom handler
@@ -38,12 +37,10 @@ export default function CameraScreen() {
         if (evt.nativeEvent.touches.length === 2) {
           const touch1 = evt.nativeEvent.touches[0];
           const touch2 = evt.nativeEvent.touches[1];
-
           const distance = Math.sqrt(
             Math.pow(touch2.pageX - touch1.pageX, 2) +
               Math.pow(touch2.pageY - touch1.pageY, 2)
           );
-
           // Normalize distance to zoom value (0-1)
           const normalizedZoom = Math.min(
             Math.max((distance - 100) / 200, 0),
@@ -53,7 +50,6 @@ export default function CameraScreen() {
         }
       },
       onPanResponderRelease: () => {
-        // Hide zoom slider after 2 seconds
         setTimeout(() => setShowZoomSlider(false), 2000);
       },
       onShouldBlockNativeResponder: () => true,
@@ -61,7 +57,6 @@ export default function CameraScreen() {
   ).current;
 
   if (!permission) return <View style={styles.container} />;
-
   if (!permission.granted) {
     return (
       <View style={styles.permissionContainer}>
@@ -85,36 +80,36 @@ export default function CameraScreen() {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
-          base64: true,
+          base64: false,
+          quality: 0.7,
+          skipProcessing: true,
         });
-        // Mock the AI backend call
-        const response = await mockSendToBackend(photo);
 
-        const newProduct = {
-          productId: Date.now().toString(),
-          userId: '123',
-          productName: response.productName,
-          quantity: response.quantity,
-          creationDate: new Date().toISOString(),
-          expirationDate: response.expirationDate,
-          notified: false,
-          categoryId: response.categoryId,
-          daysUntilExpiry: Math.ceil(
-            (new Date(response.expirationDate).getTime() - Date.now()) /
-              (1000 * 60 * 60 * 24)
-          ),
-          categoryName: response.categoryName,
-          imageUrl: photo.uri,
-        };
+        let usableUri = photo.uri;
+        console.log('Original photo URI:', usableUri);
 
-        addProduct(newProduct);
+        // On Android, copy to cache
+        if (Platform.OS === 'android') {
+          const cacheUri =
+            FileSystem.cacheDirectory + `photo_${Date.now()}.jpg`;
+          await FileSystem.copyAsync({ from: usableUri, to: cacheUri });
+          console.log('Copied photo to:', cacheUri);
+          usableUri = cacheUri;
+        }
 
-        showAlert({
-          title: 'Product recognized!',
-          message: `Name: ${response.productName}\nExpires: ${response.expirationDate}`,
+        // Test if file exists before navigating
+        const fileInfo = await FileSystem.getInfoAsync(usableUri);
+        console.log('File info:', fileInfo);
+
+        router.push({
+          pathname: '/addProduct',
+          params: {
+            photoUri: usableUri,
+            fromCamera: 'true',
+          },
         });
-        router.back();
-      } catch {
+      } catch (error) {
+        console.log('Camera snap error:', error);
         showAlert({
           title: 'Error',
           message: 'Failed to take picture. Please try again.',

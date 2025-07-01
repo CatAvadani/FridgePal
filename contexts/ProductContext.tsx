@@ -18,7 +18,10 @@ import React, {
 interface ProductContextValue {
   products: ProductDisplay[];
   fetchProducts: () => Promise<void>;
-  addProduct: (productData: CreateProductRequest) => Promise<void>;
+  addProduct: (
+    productData: CreateProductRequest,
+    imageUri?: string | null
+  ) => Promise<void>;
   updateProduct: (
     itemId: string,
     updatedData: Partial<CreateProductRequest>
@@ -51,20 +54,23 @@ export default function ProductProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  const addProduct = useCallback(async (productData: CreateProductRequest) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const newProduct = await createProduct(productData);
-      setProducts((prev) => [...prev, newProduct]);
-    } catch (error) {
-      console.error('[ProductContext] addProduct error:', error);
-      setError('Failed to add product. Please try again.');
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const addProduct = useCallback(
+    async (productData: CreateProductRequest, imageUri?: string | null) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const newProduct = await createProduct(productData, imageUri);
+        setProducts((prev) => [...prev, newProduct]);
+      } catch (error) {
+        console.error('[ProductContext] addProduct error:', error);
+        setError('Failed to add product. Please try again.');
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const updateProduct = useCallback(
     async (itemId: string, updatedData: Partial<CreateProductRequest>) => {
