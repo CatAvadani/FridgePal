@@ -131,13 +131,13 @@ export default function AddProductScreen() {
                   resizeMode='cover'
                 />
                 <TouchableOpacity
-                  className='absolute top-2 right-2 bg-red-500 rounded-full p-2'
+                  className='absolute top-2 right-2 bg-gray-200/40 border border-white/50 rounded-full p-2'
                   onPress={handleRemoveImage}
                 >
-                  <MaterialIcons name='close' size={20} color='white' />
+                  <MaterialIcons name='close' size={20} color='red' />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className='absolute top-2 left-2 bg-blue-500 rounded-full p-2'
+                  className='absolute top-2 left-2  bg-gray-200/40 border border-white/50 rounded-full p-2'
                   onPress={handleAddImage}
                 >
                   <MaterialIcons name='edit' size={20} color='white' />
