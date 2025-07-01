@@ -99,7 +99,7 @@ export default function AddProductScreen() {
       {/* Header */}
       <View className='bg-transparent border-b border-gray-200 dark:border-gray-700'>
         <View className='flex-row items-center justify-between px-4 py-3'>
-          <TouchableOpacity onPress={() => router.back()} className='p-2'>
+          <TouchableOpacity onPress={() => router.replace('/')} className='p-2'>
             <MaterialIcons
               name='arrow-back'
               size={24}
