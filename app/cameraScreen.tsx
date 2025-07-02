@@ -1,6 +1,6 @@
 import CameraZoomControls from '@/components/CameraZoomControls';
 import { useAlert } from '@/hooks/useCustomAlert';
-import { analyzeImageWithAI } from '@/services/aiAnalysisApi'; // Use real function
+import { analyzeImageWithAI } from '@/services/aiAnalysisApi'; // Import both
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
@@ -30,8 +30,8 @@ export default function CameraScreen() {
   const isFromTakePhoto = params.from === 'takePhoto';
   const isFromAddProduct = params.from === 'addProduct';
 
-  console.log(' Camera Screen Params:', params);
-  console.log(' isFromTakePhoto:', isFromTakePhoto);
+  console.log('Camera Screen Params:', params);
+  console.log('isFromTakePhoto:', isFromTakePhoto);
   console.log('isFromAddProduct:', isFromAddProduct);
 
   // Pinch to zoom handler
@@ -118,7 +118,6 @@ export default function CameraScreen() {
 
         if (isFromTakePhoto) {
           console.log('Triggering AI Analysis flow');
-
           await handleAIAnalysis(usableUri);
         } else {
           console.log('Triggering Manual flow');
@@ -214,7 +213,6 @@ export default function CameraScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* AI analysis indicator */}
         {isAnalyzing && (
           <View style={styles.analyzingContainer}>
             <ActivityIndicator size='large' color='white' />
