@@ -1,41 +1,115 @@
 import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
-import { useProducts } from '@/contexts/ProductContext';
+import { useAlert } from '@/hooks/useCustomAlert';
 import { ProductDisplay } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Image,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
+  withSequence,
   withSpring,
 } from 'react-native-reanimated';
 
 interface ProductCardProps {
   product: ProductDisplay;
   onTap?: (product: ProductDisplay) => void;
+  isFirstCard?: boolean;
+  onDelete?: () => void;
 }
 
-const ProductCard = ({ product, onTap }: ProductCardProps) => {
+const SWIPE_THRESHOLD = -80;
+const ACTION_WIDTH = 160;
+const DEMO_REVEAL = -120;
+
+const ProductCard = ({
+  product,
+  onTap,
+  isFirstCard = false,
+  onDelete = () => {},
+}: ProductCardProps) => {
   const router = useRouter();
-  const { deleteProduct } = useProducts();
+  const [hasSeenDemo, setHasSeenDemo] = useState(true);
+
+  const { showAlert } = useAlert();
 
   const translateX = useSharedValue(0);
   const context = useSharedValue({ x: 0 });
 
-  const SWIPE_THRESHOLD = -80;
-  const ACTION_WIDTH = 160;
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
+
+  const startDemoAnimation = useCallback(async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenSwipeDemo', 'true');
+      setHasSeenDemo(true);
+    } catch (error) {
+      console.log('Error saving demo status:', error);
+    }
+
+    // Animation: slide out - pause - slide back
+    translateX.value = withSequence(
+      withDelay(
+        500,
+        withSpring(DEMO_REVEAL, {
+          duration: 800,
+          dampingRatio: 0.8,
+        })
+      ),
+      withDelay(
+        500,
+        withSpring(0, {
+          duration: 600,
+          dampingRatio: 0.8,
+        })
+      )
+    );
+  }, [translateX]);
+
+  useEffect(() => {
+    // This line is added for demo purposes to reset the demo status
+    // TODO: Remove this line in production to keep demo status persistent
+    AsyncStorage.removeItem('hasSeenSwipeDemo');
+
+    const checkDemoStatus = async () => {
+      try {
+        const hasSeenBefore = await AsyncStorage.getItem('hasSeenSwipeDemo');
+        const shouldShowDemo = hasSeenBefore !== 'true' && isFirstCard;
+        setHasSeenDemo(hasSeenBefore === 'true');
+
+        if (shouldShowDemo) {
+          setTimeout(() => {
+            startDemoAnimation();
+          }, 1000);
+        }
+      } catch (error) {
+        console.log('Error checking demo status:', error);
+      }
+    };
+
+    if (isFirstCard) {
+      checkDemoStatus();
+    }
+  }, [isFirstCard, startDemoAnimation]);
 
   const pan = Gesture.Pan()
-    .activeOffsetX([-10, 10]) // Only activate after 10px horizontal movement
-    .failOffsetY([-5, 5]) // Fail if moved more than 5px vertically
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-5, 5])
     .onStart(() => {
       context.value = { x: translateX.value };
     })
     .onUpdate((event) => {
-      // Only allow swiping left (negative values)
       translateX.value = Math.min(0, context.value.x + event.translationX);
     })
     .onEnd((event) => {
@@ -77,10 +151,11 @@ const ProductCard = ({ product, onTap }: ProductCardProps) => {
 
   const handleDelete = () => {
     hideActions();
-    Alert.alert(
-      'Delete Product',
-      `Are you sure you want to delete "${product.productName}"? This action cannot be undone.`,
-      [
+    showAlert({
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${product.productName}"? This action cannot be undone.`,
+      icon: 'delete-forever',
+      buttons: [
         {
           text: 'Cancel',
           style: 'cancel',
@@ -88,21 +163,10 @@ const ProductCard = ({ product, onTap }: ProductCardProps) => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteProduct(product.itemId);
-              // Alert.alert('Success', 'Product deleted successfully');
-            } catch (error) {
-              Alert.alert(
-                'Error',
-                'Failed to delete product. Please try again.'
-              );
-              console.error('Error deleting product:', error);
-            }
-          },
+          onPress: onDelete,
         },
-      ]
-    );
+      ],
+    });
   };
 
   return (
@@ -131,7 +195,7 @@ const ProductCard = ({ product, onTap }: ProductCardProps) => {
       {/* Main Card */}
       <GestureDetector gesture={composed}>
         <Animated.View style={animatedStyle}>
-          <View className='flex-row justify-between items-center bg-white dark:bg-slate-800 rounded-lg gap-4'>
+          <View className='flex-row justify-between items-center bg-white dark:bg-gray-800 rounded-lg gap-4'>
             <Image
               source={{ uri: product.imageUrl }}
               className='w-20 h-20 object-cover rounded-lg'
@@ -143,18 +207,21 @@ const ProductCard = ({ product, onTap }: ProductCardProps) => {
               <Text
                 className={`text-sm mt-1 ${getExpiryColorClass(product.daysUntilExpiry)}`}
               >
-                {product.daysUntilExpiry === 0
-                  ? 'Expires today'
-                  : product.daysUntilExpiry === 1
-                    ? 'Expires tomorrow'
-                    : `Expires in ${product.daysUntilExpiry} days`}
+                {product.daysUntilExpiry < 0
+                  ? `Expired ${Math.abs(product.daysUntilExpiry)} ${Math.abs(product.daysUntilExpiry) === 1 ? 'day' : 'days'} ago`
+                  : product.daysUntilExpiry === 0
+                    ? 'Expires today'
+                    : product.daysUntilExpiry === 1
+                      ? 'Expires tomorrow'
+                      : `Expires in ${product.daysUntilExpiry} days`}
               </Text>
             </View>
 
             <MaterialIcons
               name='keyboard-double-arrow-left'
               size={20}
-              className='text-gray-500 dark:text-gray-400 mr-2'
+              color={isDarkMode ? 'gray' : 'black'}
+              className=' mr-2'
             />
           </View>
         </Animated.View>

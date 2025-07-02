@@ -1,79 +1,115 @@
+import CategoryModal from '@/components/CategoryModal';
 import { useProducts } from '@/contexts/ProductContext';
+import { useAlert } from '@/hooks/useCustomAlert';
 import { CATEGORIES, CreateProductRequest } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  Alert,
+  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
+  useColorScheme,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AddProductScreen() {
+  const colorScheme = useColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { addProduct } = useProducts();
+  const { showAlert } = useAlert();
 
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [expirationDate, setExpirationDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (params.photoUri && typeof params.photoUri === 'string') {
+      setSelectedImageUri(params.photoUri);
+    }
+  }, [params.photoUri]);
+
+  const handleRemoveImage = () => {
+    setSelectedImageUri(null);
+  };
+
+  const handleAddImage = () => {
+    router.push('/cameraScreen?from=addProduct');
+  };
 
   const handleSave = async () => {
     if (!productName.trim()) {
-      Alert.alert('Error', 'Please enter a product name');
+      showAlert({ title: 'Error', message: 'Please enter a product name' });
       return;
     }
-
     const quantityNum = parseInt(quantity);
     if (!quantity.trim() || isNaN(quantityNum) || quantityNum <= 0) {
-      Alert.alert('Error', 'Please enter a valid quantity (greater than 0)');
+      showAlert({
+        title: 'Error',
+        message: 'Please enter a valid quantity (greater than 0)',
+      });
       return;
     }
-
     if (!categoryId) {
-      Alert.alert('Error', 'Please select a category');
+      showAlert({ title: 'Error', message: 'Please select a category' });
       return;
     }
-
-    const newProduct: CreateProductRequest = {
-      productName,
-      quantity: quantityNum,
-      expirationDate: expirationDate.toISOString(),
-      categoryId,
-    };
-
     try {
-      await addProduct(newProduct);
-      Alert.alert('Success', 'Product added successfully');
-      router.back();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to add product. Please try again.');
-      console.error('Error adding product:', error);
+      setSaving(true);
+      const newProduct: CreateProductRequest = {
+        productName,
+        quantity: quantityNum,
+        expirationDate: expirationDate.toISOString(),
+        categoryId,
+      };
+      await addProduct(newProduct, selectedImageUri);
+      showAlert({
+        title: 'Success',
+        message: `Product "${productName}" added successfully!`,
+        icon: 'check-circle',
+      });
+      router.replace('/');
+    } catch {
+      showAlert({
+        title: 'Error',
+        message: 'Failed to add product. Please try again.',
+        icon: 'alert-circle',
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
-      {/* Custom Header */}
-      <View className='bg-transparent dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
+      {/* Header */}
+      <View className='bg-transparent border-b border-gray-200 dark:border-gray-700'>
         <View className='flex-row items-center justify-between px-4 py-3'>
-          <TouchableOpacity onPress={() => router.back()} className='p-2'>
-            <MaterialIcons name='arrow-back' size={24} color='#000' />
+          <TouchableOpacity onPress={() => router.replace('/')} className='p-2'>
+            <MaterialIcons
+              name='arrow-back'
+              size={24}
+              color={isDarkMode ? 'gray' : 'black'}
+            />
           </TouchableOpacity>
-
           <Text className='text-2xl font-semibold text-gray-900 dark:text-white'>
             Add Product
           </Text>
-
           <View className='w-10' />
         </View>
       </View>
@@ -82,12 +118,53 @@ export default function AddProductScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className='flex-1'
       >
-        <ScrollView
-          contentContainerStyle={{ paddingBottom: 300 }}
-          className='flex-1 px-5 py-6'
-        >
-          {/* Product Name Input */}
-          <View className='mb-6'>
+        <ScrollView className='flex-1 px-5 py-6'>
+          {/* Image Section */}
+          <View className='mb-4'>
+            <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
+              Product Image (Optional)
+            </Text>
+            {selectedImageUri ? (
+              <View className='relative'>
+                <Image
+                  source={{ uri: selectedImageUri }}
+                  className='w-full h-48 rounded-lg bg-gray-200 dark:bg-gray-700'
+                  resizeMode='cover'
+                />
+                <TouchableOpacity
+                  className='absolute top-2 right-2 bg-gray-200/40 border border-white/50 rounded-full p-2'
+                  onPress={handleRemoveImage}
+                >
+                  <MaterialIcons name='close' size={20} color='red' />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className='absolute top-2 left-2  bg-gray-200/40 border border-white/50 rounded-full p-2'
+                  onPress={handleAddImage}
+                >
+                  <MaterialIcons name='edit' size={20} color='white' />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                className='h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg justify-center items-center bg-gray-50 dark:bg-gray-800'
+                onPress={handleAddImage}
+              >
+                <View className='items-center'>
+                  <MaterialIcons
+                    name='add-photo-alternate'
+                    size={48}
+                    color={isDarkMode ? '#6B7280' : '#9CA3AF'}
+                  />
+                  <Text className='text-gray-500 dark:text-gray-400 mt-2'>
+                    Tap to add product image
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Product Name */}
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Product Name
             </Text>
@@ -100,8 +177,8 @@ export default function AddProductScreen() {
             />
           </View>
 
-          {/* Quantity Input */}
-          <View className='mb-6'>
+          {/* Quantity */}
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Quantity
             </Text>
@@ -115,17 +192,14 @@ export default function AddProductScreen() {
             />
           </View>
 
-          {/* Category Input */}
-          <View className='mb-6 relative z-10'>
+          {/* Category */}
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Category
             </Text>
-
             <TouchableOpacity
               className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
-              onPress={() => {
-                setDropdownOpen((prev) => !prev);
-              }}
+              onPress={() => setShowCategoryModal(true)}
             >
               <Text className='text-gray-400 dark:text-white'>
                 {categoryId
@@ -135,29 +209,10 @@ export default function AddProductScreen() {
               </Text>
               <MaterialIcons name='arrow-drop-down' size={24} color='#9CA3AF' />
             </TouchableOpacity>
-
-            {dropdownOpen && (
-              <View className='absolute top-[90%] left-0 right-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg mt-2 shadow-lg z-20'>
-                {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.categoryId}
-                    className='p-4 border-b border-gray-200 dark:border-gray-700'
-                    onPress={() => {
-                      setCategoryId(cat.categoryId);
-                      setDropdownOpen(false);
-                    }}
-                  >
-                    <Text className='text-gray-600 dark:text-white'>
-                      {cat.categoryName}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
 
           {/* Expiration Date */}
-          <View className='mb-6'>
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Expiration Date
             </Text>
@@ -189,24 +244,39 @@ export default function AddProductScreen() {
           )}
 
           {/* Action Buttons */}
-          <View className='flex-row gap-4 mt-8'>
+          <View className='flex-row gap-4 mt-6'>
             <TouchableOpacity
-              className='flex-1 button-secondary border border-primary  dark:bg-gray-700 p-4 rounded-lg'
+              className='flex-1 button-secondary border border-primary dark:bg-transparent p-4 rounded-lg'
               onPress={() => router.back()}
+              disabled={saving}
             >
-              <Text className='text-center text-primary dark:text-gray-300 font-semibold'>
+              <Text className='text-center text-primary font-semibold'>
                 Cancel
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               className='flex-1 button-primary p-4 rounded-lg'
               onPress={handleSave}
+              disabled={saving}
             >
-              <Text className='text-center text-white font-semibold'>Save</Text>
+              {saving ? (
+                <ActivityIndicator color='white' />
+              ) : (
+                <Text className='text-center text-white font-semibold'>
+                  Save
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <CategoryModal
+        visible={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        onSelectCategory={setCategoryId}
+        selectedCategoryId={categoryId}
+      />
     </SafeAreaView>
   );
 }

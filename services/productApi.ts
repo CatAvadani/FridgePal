@@ -18,16 +18,35 @@ export const getProducts = async (): Promise<ProductDisplay[]> => {
     throw error;
   }
 };
-
 export const createProduct = async (
-  productData: CreateProductRequest
+  productData: CreateProductRequest,
+  imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
+    console.log('Creating product:', productData);
+    console.log('Image URI:', imageUri ? imageUri : 'No image');
+
+    const formData = new FormData();
+    formData.append('ProductName', productData.productName);
+    formData.append('Quantity', productData.quantity.toString());
+    formData.append('ExpirationDate', productData.expirationDate);
+    formData.append('CategoryId', productData.categoryId.toString());
+
+    if (imageUri) {
+      console.log('Image URI before append:', imageUri);
+      formData.append('Image', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `product-${Date.now()}.jpg`,
+      } as any);
+    }
+
     const product: Product = await apiCall(ENDPOINTS.CREATE, {
       method: 'POST',
-      body: JSON.stringify(productData),
+      body: formData,
     });
 
+    console.log('Product created successfully:', product);
     return convertToProductDisplay(product);
   } catch (error) {
     console.error('Error creating product:', error);
@@ -37,12 +56,29 @@ export const createProduct = async (
 
 export const updateProduct = async (
   itemId: string,
-  updatedData: Partial<CreateProductRequest>
+  updatedData: Partial<CreateProductRequest>,
+  imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
+    const formData = new FormData();
+    formData.append('ProductName', updatedData.productName!);
+    formData.append('Quantity', updatedData.quantity!.toString());
+    formData.append('ExpirationDate', updatedData.expirationDate!);
+    formData.append('CategoryId', updatedData.categoryId!.toString());
+
+    if (imageUri) {
+      formData.append('Image', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `product-${Date.now()}.jpg`,
+      } as any);
+    } else {
+      formData.append('Image', '');
+    }
+
     const product: Product = await apiCall(`${ENDPOINTS.UPDATE}/${itemId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updatedData),
+      method: 'PATCH',
+      body: formData,
     });
 
     return convertToProductDisplay(product);

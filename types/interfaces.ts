@@ -20,11 +20,11 @@ export interface Product {
   notified: boolean;
   categoryId: number;
   categoryName?: string;
+  imageUrl?: string;
 }
 
 export interface ProductDisplay extends Product {
   daysUntilExpiry: number;
-  imageUrl?: string;
 }
 
 export interface CreateProductRequest {
