@@ -34,6 +34,23 @@ export interface CreateProductRequest {
   categoryId: number;
 }
 
+export interface BackendAIResponse {
+  itemName: string;
+  categoryId: number;
+  categoryName: string;
+  quantity: number;
+  shelfLifeDays: number;
+}
+
+export interface AIAnalysisResult {
+  productName: string;
+  expirationDate: string;
+  quantity: number;
+  categoryId: number;
+  categoryName: string;
+  confidence: number;
+}
+
 export const CATEGORIES: Category[] = [
   { categoryId: 1, categoryName: 'Dairy' },
   { categoryId: 2, categoryName: 'Meat' },

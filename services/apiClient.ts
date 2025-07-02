@@ -7,6 +7,7 @@ export const ENDPOINTS = {
   UPDATE: '/api/Item/updateItem',
   DELETE: '/api/Item/deleteItem',
   CLOUDINARY_UPLOAD: '/api/Cloudinary/upload',
+  AI_ANALYSIS: '/api/Item/analyze-image',
 };
 
 export const apiCall = async (

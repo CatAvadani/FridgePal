@@ -1,11 +1,13 @@
 import CameraZoomControls from '@/components/CameraZoomControls';
 import { useAlert } from '@/hooks/useCustomAlert';
+import { analyzeImageWithAI } from '@/services/aiAnalysisApi';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   PanResponder,
   Platform,
   StyleSheet,
@@ -19,9 +21,18 @@ export default function CameraScreen() {
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const [zoom, setZoom] = useState(0);
   const [showZoomSlider, setShowZoomSlider] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
   const { showAlert } = useAlert();
+  const params = useLocalSearchParams();
+
+  const isFromTakePhoto = params.from === 'takePhoto';
+  const isFromAddProduct = params.from === 'addProduct';
+
+  console.log('Camera Screen Params:', params);
+  console.log('isFromTakePhoto:', isFromTakePhoto);
+  console.log('isFromAddProduct:', isFromAddProduct);
 
   // Pinch to zoom handler
   const pinchGesture = useRef(
@@ -41,7 +52,6 @@ export default function CameraScreen() {
             Math.pow(touch2.pageX - touch1.pageX, 2) +
               Math.pow(touch2.pageY - touch1.pageY, 2)
           );
-          // Normalize distance to zoom value (0-1)
           const normalizedZoom = Math.min(
             Math.max((distance - 100) / 200, 0),
             1
@@ -76,45 +86,135 @@ export default function CameraScreen() {
   const toggleCamera = () =>
     setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
 
+  const processImageForAndroid = async (
+    originalUri: string
+  ): Promise<string> => {
+    try {
+      console.log('Processing image for Android:', originalUri);
+
+      // Create a more compatible filename
+      const timestamp = Date.now();
+      const filename = `photo_${timestamp}.jpg`;
+
+      // Use documentDirectory instead of cacheDirectory for better persistence
+      const processedUri = `${FileSystem.documentDirectory}${filename}`;
+
+      console.log('Target processed URI:', processedUri);
+
+      // Copy the file to a more accessible location
+      await FileSystem.copyAsync({
+        from: originalUri,
+        to: processedUri,
+      });
+
+      // Verify the file exists and get info
+      const fileInfo = await FileSystem.getInfoAsync(processedUri);
+      console.log('Processed file info:', fileInfo);
+
+      if (!fileInfo.exists) {
+        throw new Error('Failed to process image file');
+      }
+
+      return processedUri;
+    } catch (error) {
+      console.error('Error processing image for Android:', error);
+      return originalUri;
+    }
+  };
+
   const handleSnap = async () => {
     if (cameraRef.current) {
       try {
+        console.log('Taking picture...');
+        console.log('Flow check - isFromTakePhoto:', isFromTakePhoto);
+        console.log('Flow check - isFromAddProduct:', isFromAddProduct);
+
         const photo = await cameraRef.current.takePictureAsync({
           base64: false,
-          quality: 0.7,
-          skipProcessing: true,
+          quality: 0.8,
+          skipProcessing: false,
+          exif: false,
         });
 
         let usableUri = photo.uri;
         console.log('Original photo URI:', usableUri);
 
-        // On Android, copy to cache
+        // Process image for Android compatibility
         if (Platform.OS === 'android') {
-          const cacheUri =
-            FileSystem.cacheDirectory + `photo_${Date.now()}.jpg`;
-          await FileSystem.copyAsync({ from: usableUri, to: cacheUri });
-          console.log('Copied photo to:', cacheUri);
-          usableUri = cacheUri;
+          usableUri = await processImageForAndroid(usableUri);
         }
 
-        // Test if file exists before navigating
+        // Verify file accessibility before proceeding
         const fileInfo = await FileSystem.getInfoAsync(usableUri);
-        console.log('File info:', fileInfo);
+        console.log('Final file info before navigation:', fileInfo);
 
-        router.push({
-          pathname: '/addProduct',
-          params: {
-            photoUri: usableUri,
-            fromCamera: 'true',
-          },
-        });
+        if (!fileInfo.exists) {
+          throw new Error('Image file is not accessible');
+        }
+
+        if (isFromTakePhoto) {
+          console.log('Triggering AI Analysis flow');
+          await handleAIAnalysis(usableUri);
+        } else {
+          console.log('Triggering Manual flow');
+          router.push({
+            pathname: '/addProduct',
+            params: {
+              photoUri: usableUri,
+              fromCamera: 'true',
+            },
+          });
+        }
       } catch (error) {
-        console.log('Camera snap error:', error);
+        console.error('Camera snap error:', error);
         showAlert({
           title: 'Error',
           message: 'Failed to take picture. Please try again.',
         });
       }
+    }
+  };
+
+  const handleAIAnalysis = async (imageUri: string) => {
+    try {
+      setIsAnalyzing(true);
+
+      console.log('Starting AI analysis for image:', imageUri);
+
+      const analysisResult = await analyzeImageWithAI(imageUri);
+
+      console.log('AI Analysis result:', analysisResult);
+
+      // Navigate to AddProduct with prefilled data
+      router.push({
+        pathname: '/addProduct',
+        params: {
+          photoUri: imageUri,
+          fromAI: 'true',
+          productName: analysisResult.productName,
+          quantity: analysisResult.quantity.toString(),
+          categoryId: analysisResult.categoryId.toString(),
+          expirationDate: analysisResult.expirationDate,
+        },
+      });
+    } catch (error) {
+      console.error('AI Analysis error:', error);
+
+      showAlert({
+        title: 'Analysis Failed',
+        message:
+          'Could not analyze the image automatically. You can fill in the details manually.',
+      });
+
+      router.push({
+        pathname: '/addProduct',
+        params: {
+          photoUri: imageUri,
+          fromCamera: 'true',
+        },
+      });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -149,6 +249,13 @@ export default function CameraScreen() {
           </TouchableOpacity>
         </View>
 
+        {isAnalyzing && (
+          <View style={styles.analyzingContainer}>
+            <ActivityIndicator size='large' color='white' />
+            <Text style={styles.analyzingText}>Analyzing image...</Text>
+          </View>
+        )}
+
         {/* Camera frame overlay */}
         <View style={styles.cameraOverlay}>
           <View style={styles.frameCornerTopLeft} />
@@ -168,9 +275,20 @@ export default function CameraScreen() {
             <Feather name='refresh-ccw' size={24} color='black' />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleSnap} style={styles.captureButton}>
+          <TouchableOpacity
+            onPress={handleSnap}
+            style={[
+              styles.captureButton,
+              isAnalyzing && styles.captureButtonDisabled,
+            ]}
+            disabled={isAnalyzing}
+          >
             <View style={styles.captureButtonInner}>
-              <Feather name='camera' size={28} color='#FF0000' />
+              {isAnalyzing ? (
+                <ActivityIndicator size={28} color='#FF0000' />
+              ) : (
+                <Feather name='camera' size={28} color='#FF0000' />
+              )}
             </View>
           </TouchableOpacity>
 
@@ -236,19 +354,23 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
-  zoomIndicator: {
+  analyzingContainer: {
     position: 'absolute',
-    top: 120,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    top: '50%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: 20,
+    marginHorizontal: 40,
+    borderRadius: 12,
+    transform: [{ translateY: -50 }],
   },
-  zoomText: {
+  analyzingText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+    marginTop: 12,
   },
   cameraOverlay: {
     flex: 1,
@@ -296,72 +418,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 3,
     borderColor: 'white',
   },
-  zoomSliderContainer: {
-    position: 'absolute',
-    bottom: 180,
-    left: 40,
-    right: 40,
-    height: 60,
-  },
-  zoomSliderTrack: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 2,
-    overflow: 'visible',
-  },
-  zoomSliderFill: {
-    height: '100%',
-    backgroundColor: 'white',
-    borderRadius: 2,
-  },
-  zoomSliderThumb: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'white',
-    top: -8,
-    marginLeft: -10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  zoomLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  zoomLabel: {
-    color: 'white',
-    fontSize: 12,
-    opacity: 0.8,
-  },
-  zoomButtonsContainer: {
-    position: 'absolute',
-    bottom: 120,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 20,
-    padding: 4,
-  },
-  zoomButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  zoomButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
-    opacity: 0.7,
-  },
-  activeZoom: {
-    opacity: 1,
-    fontWeight: '700',
-  },
   bottomControls: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -386,6 +442,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 4,
     borderColor: '#FF0000',
+  },
+  captureButtonDisabled: {
+    opacity: 0.7,
   },
   captureButtonInner: {
     justifyContent: 'center',
