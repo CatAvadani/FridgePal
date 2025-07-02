@@ -201,7 +201,7 @@ const ProductCard = ({
               className='w-20 h-20 object-cover rounded-lg'
             />
             <View className='flex-1'>
-              <Text className='text-base font-bold text-gray-800 dark:text-white'>
+              <Text className='text-base font-bold text-gray-800 dark:text-white capitalize'>
                 {product.productName} ({product.quantity})
               </Text>
               <Text
