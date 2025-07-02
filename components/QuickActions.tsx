@@ -6,12 +6,22 @@ import { Text, TouchableOpacity, View } from 'react-native';
 const QuickActions = () => {
   const router = useRouter();
 
+  const handleAddProduct = () => {
+    console.log(' Add Product button clicked - navigating to addProduct');
+    router.push('/addProduct');
+  };
+
+  const handleTakePhoto = () => {
+    console.log('Take Photo button clicked - navigating with from=takePhoto');
+    router.push('/cameraScreen?from=takePhoto');
+  };
+
   return (
     <View className='px-2 mb-6'>
       <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700/20'>
         <TouchableOpacity
           className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
-          onPress={() => router.push('/addProduct')}
+          onPress={handleAddProduct}
           style={{ elevation: 3 }}
         >
           <View
@@ -29,7 +39,7 @@ const QuickActions = () => {
 
         <TouchableOpacity
           className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
-          onPress={() => router.push('/cameraScreen')}
+          onPress={handleTakePhoto}
           style={{ elevation: 3 }}
         >
           <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800'>
