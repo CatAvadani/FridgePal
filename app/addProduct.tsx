@@ -1,3 +1,4 @@
+import CategoryModal from '@/components/CategoryModal';
 import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { CATEGORIES, CreateProductRequest } from '@/types/interfaces';
@@ -32,9 +33,9 @@ export default function AddProductScreen() {
   const [expirationDate, setExpirationDate] = useState(new Date());
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -161,6 +162,7 @@ export default function AddProductScreen() {
               </TouchableOpacity>
             )}
           </View>
+
           {/* Product Name */}
           <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
@@ -174,6 +176,7 @@ export default function AddProductScreen() {
               onChangeText={setProductName}
             />
           </View>
+
           {/* Quantity */}
           <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
@@ -188,16 +191,15 @@ export default function AddProductScreen() {
               keyboardType='numeric'
             />
           </View>
+
           {/* Category */}
-          <View className='mb-4 relative z-10'>
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Category
             </Text>
             <TouchableOpacity
               className='bg-white dark:bg-gray-800 p-4 rounded-lg flex-row justify-between items-center'
-              onPress={() => {
-                setDropdownOpen((prev) => !prev);
-              }}
+              onPress={() => setShowCategoryModal(true)}
             >
               <Text className='text-gray-400 dark:text-white'>
                 {categoryId
@@ -207,24 +209,6 @@ export default function AddProductScreen() {
               </Text>
               <MaterialIcons name='arrow-drop-down' size={24} color='#9CA3AF' />
             </TouchableOpacity>
-            {dropdownOpen && (
-              <View className='absolute top-[90%] left-0 right-0 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg mt-2 shadow-lg z-20'>
-                {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.categoryId}
-                    className='p-4 border-b border-gray-200 dark:border-gray-700'
-                    onPress={() => {
-                      setCategoryId(cat.categoryId);
-                      setDropdownOpen(false);
-                    }}
-                  >
-                    <Text className='text-gray-600 dark:text-white'>
-                      {cat.categoryName}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
 
           {/* Expiration Date */}
@@ -242,6 +226,7 @@ export default function AddProductScreen() {
               <MaterialIcons name='calendar-today' size={20} color='#9CA3AF' />
             </TouchableOpacity>
           </View>
+
           {/* Date Picker */}
           {showDatePicker && (
             <DateTimePicker
@@ -257,6 +242,7 @@ export default function AddProductScreen() {
               minimumDate={new Date()}
             />
           )}
+
           {/* Action Buttons */}
           <View className='flex-row gap-4 mt-6'>
             <TouchableOpacity
@@ -284,6 +270,13 @@ export default function AddProductScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <CategoryModal
+        visible={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        onSelectCategory={setCategoryId}
+        selectedCategoryId={categoryId}
+      />
     </SafeAreaView>
   );
 }
