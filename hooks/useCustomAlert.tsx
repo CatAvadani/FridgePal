@@ -38,19 +38,21 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   return (
     <AlertContext.Provider value={{ showAlert }}>
       {children}
-      <CustomAlert
-        visible={visible}
-        onDismiss={handleDismiss}
-        title={options?.title || ''}
-        message={options?.message || ''}
-        icon={options?.icon}
-        buttons={options?.buttons
-          ?.filter(
-            (b): b is AlertButton & { text: string } =>
-              typeof b.text === 'string'
-          )
-          .map((b) => ({ ...b, text: b.text as string }))}
-      />
+      {options && (options.title || options.message) && (
+        <CustomAlert
+          visible={visible}
+          onDismiss={handleDismiss}
+          title={options?.title || ''}
+          message={options?.message || ''}
+          icon={options?.icon}
+          buttons={options?.buttons
+            ?.filter(
+              (b): b is AlertButton & { text: string } =>
+                typeof b.text === 'string'
+            )
+            .map((b) => ({ ...b, text: b.text as string }))}
+        />
+      )}
     </AlertContext.Provider>
   );
 }

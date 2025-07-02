@@ -56,12 +56,29 @@ export const createProduct = async (
 
 export const updateProduct = async (
   itemId: string,
-  updatedData: Partial<CreateProductRequest>
+  updatedData: Partial<CreateProductRequest>,
+  imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
+    const formData = new FormData();
+    formData.append('ProductName', updatedData.productName!);
+    formData.append('Quantity', updatedData.quantity!.toString());
+    formData.append('ExpirationDate', updatedData.expirationDate!);
+    formData.append('CategoryId', updatedData.categoryId!.toString());
+
+    if (imageUri) {
+      formData.append('Image', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: `product-${Date.now()}.jpg`,
+      } as any);
+    } else {
+      formData.append('Image', '');
+    }
+
     const product: Product = await apiCall(`${ENDPOINTS.UPDATE}/${itemId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updatedData),
+      method: 'PATCH',
+      body: formData,
     });
 
     return convertToProductDisplay(product);

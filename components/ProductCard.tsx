@@ -1,5 +1,4 @@
 import { getExpiryColorClass } from '@/constants/getExpiryColorsClass';
-import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { ProductDisplay } from '@/types/interfaces';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -27,6 +26,7 @@ interface ProductCardProps {
   product: ProductDisplay;
   onTap?: (product: ProductDisplay) => void;
   isFirstCard?: boolean;
+  onDelete?: () => void;
 }
 
 const SWIPE_THRESHOLD = -80;
@@ -37,9 +37,9 @@ const ProductCard = ({
   product,
   onTap,
   isFirstCard = false,
+  onDelete = () => {},
 }: ProductCardProps) => {
   const router = useRouter();
-  const { deleteProduct } = useProducts();
   const [hasSeenDemo, setHasSeenDemo] = useState(true);
 
   const { showAlert } = useAlert();
@@ -163,25 +163,7 @@ const ProductCard = ({
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteProduct(product.itemId);
-              showAlert({
-                title: 'Deleted!',
-                message: 'Product deleted successfully.',
-                icon: 'check-circle',
-                buttons: [{ text: 'OK', style: 'default' }],
-              });
-            } catch (error) {
-              showAlert({
-                title: 'Error',
-                message: 'Failed to delete product. Please try again.',
-                icon: 'alert-circle',
-                buttons: [{ text: 'OK', style: 'default' }],
-              });
-              console.error('Error deleting product:', error);
-            }
-          },
+          onPress: onDelete,
         },
       ],
     });

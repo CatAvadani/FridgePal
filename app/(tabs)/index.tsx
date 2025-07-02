@@ -1,6 +1,8 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
 import { useProducts } from '@/contexts/ProductContext';
+import { useAlert } from '@/hooks/useCustomAlert';
+import { ProductDisplay } from '@/types/interfaces';
 import { convertToProductDisplay } from '@/utils/productUtils';
 import React, { useCallback, useState } from 'react';
 import {
@@ -19,8 +21,8 @@ import {
 
 export default function HomeScreen() {
   const userName = 'Cat';
-
-  const { products, fetchProducts } = useProducts();
+  const { products, fetchProducts, deleteProduct } = useProducts();
+  const { showAlert } = useAlert();
   const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -36,6 +38,27 @@ export default function HomeScreen() {
   const expiringProducts = productDisplays
     .filter((p) => p.daysUntilExpiry <= 10)
     .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
+
+  const handleDeleteProduct = async (
+    product: ProductDisplay
+  ): Promise<void> => {
+    try {
+      await deleteProduct(product.itemId);
+      showAlert({
+        title: 'Deleted!',
+        message: 'Product deleted successfully.',
+        icon: 'check-circle',
+        buttons: [{ text: 'OK', style: 'default' }],
+      });
+    } catch {
+      showAlert({
+        title: 'Error',
+        message: 'Failed to delete product. Please try again.',
+        icon: 'alert-circle',
+        buttons: [{ text: 'OK', style: 'default' }],
+      });
+    }
+  };
 
   // Calculate the negative margin to extend image to top of screen
   const imageMarginTop =
@@ -99,12 +122,12 @@ export default function HomeScreen() {
           <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
             Expiring Products
           </Text>
-
           {expiringProducts.map((product, index) => (
             <ProductCard
               key={product.itemId}
               product={product}
               isFirstCard={index === 0}
+              onDelete={() => handleDeleteProduct(product)}
             />
           ))}
         </View>

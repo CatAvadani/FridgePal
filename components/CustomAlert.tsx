@@ -23,7 +23,6 @@ export default function CustomAlert({
   visible,
   title,
   message,
-  icon,
   buttons = [{ text: 'OK', style: 'default' }],
   onDismiss,
 }: CustomAlertProps) {

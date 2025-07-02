@@ -8,6 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAlert } from '@/hooks/useCustomAlert';
 import {
+  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -31,6 +33,7 @@ export default function EditProductScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -45,6 +48,9 @@ export default function EditProductScreen() {
       setQuantity(currentProduct.quantity.toString());
       setExpirationDate(new Date(currentProduct.expirationDate));
       setCategoryId(currentProduct.categoryId);
+      if (currentProduct.imageUrl) {
+        setSelectedImageUri(currentProduct.imageUrl);
+      }
     }
   }, [products, productId]);
 
@@ -102,7 +108,8 @@ export default function EditProductScreen() {
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
-      <View className='bg-transparent  border-b border-gray-200 dark:border-gray-700'>
+      {/* Header */}
+      <View className='bg-transparent border-b border-gray-200 dark:border-gray-700'>
         <View className='flex-row items-center justify-between px-4 py-3'>
           <TouchableOpacity onPress={() => router.back()} className='p-2'>
             <MaterialIcons
@@ -125,8 +132,37 @@ export default function EditProductScreen() {
         className='flex-1'
       >
         <ScrollView className='flex-1 px-5 py-6'>
+          {/* Image Section */}
+          <View className='mb-4'>
+            <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
+              Product Image
+            </Text>
+            {selectedImageUri ? (
+              <View className='relative'>
+                <Image
+                  source={{ uri: selectedImageUri }}
+                  className='w-full h-48 rounded-lg bg-gray-200 dark:bg-gray-700'
+                  resizeMode='cover'
+                />
+              </View>
+            ) : (
+              <View className='h-48 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg justify-center items-center bg-gray-50 dark:bg-gray-800'>
+                <View className='items-center'>
+                  <MaterialIcons
+                    name='image'
+                    size={48}
+                    color={isDarkMode ? '#6B7280' : '#9CA3AF'}
+                  />
+                  <Text className='text-gray-500 dark:text-gray-400 mt-2'>
+                    No image available
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+
           {/* Product Name Input */}
-          <View className='mb-6'>
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Product Name
             </Text>
@@ -140,7 +176,7 @@ export default function EditProductScreen() {
           </View>
 
           {/* Quantity Input */}
-          <View className='mb-6'>
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Quantity
             </Text>
@@ -155,7 +191,7 @@ export default function EditProductScreen() {
           </View>
 
           {/* Category Input */}
-          <View className='mb-6 relative z-10'>
+          <View className='mb-4 relative z-10'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Category
             </Text>
@@ -194,7 +230,7 @@ export default function EditProductScreen() {
           </View>
 
           {/* Expiration Date */}
-          <View className='mb-6'>
+          <View className='mb-4'>
             <Text className='text-base font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Expiration Date
             </Text>
@@ -226,10 +262,11 @@ export default function EditProductScreen() {
           )}
 
           {/* Action Buttons */}
-          <View className='flex-row gap-4 mt-8'>
+          <View className='flex-row gap-4 mt-6'>
             <TouchableOpacity
-              className='flex-1 button-secondary border border-primary  dark:bg-transparent p-4 rounded-lg'
+              className='flex-1 button-secondary border border-primary dark:bg-transparent p-4 rounded-lg'
               onPress={() => router.back()}
+              disabled={loading}
             >
               <Text className='text-center text-primary font-semibold'>
                 Cancel
@@ -238,10 +275,15 @@ export default function EditProductScreen() {
             <TouchableOpacity
               className='flex-1 button-primary p-4 rounded-lg'
               onPress={handleUpdate}
+              disabled={loading}
             >
-              <Text className='text-center text-white font-semibold'>
-                Update
-              </Text>
+              {loading ? (
+                <ActivityIndicator color='white' />
+              ) : (
+                <Text className='text-center text-white font-semibold'>
+                  Update
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
