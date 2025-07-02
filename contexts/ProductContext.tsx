@@ -59,8 +59,8 @@ export default function ProductProvider({ children }: PropsWithChildren) {
       try {
         setLoading(true);
         setError(null);
-        const newProduct = await createProduct(productData, imageUri);
-        setProducts((prev) => [...prev, newProduct]);
+        await createProduct(productData, imageUri);
+        await fetchProducts();
       } catch (error) {
         console.error('[ProductContext] addProduct error:', error);
         setError('Failed to add product. Please try again.');
@@ -69,7 +69,7 @@ export default function ProductProvider({ children }: PropsWithChildren) {
         setLoading(false);
       }
     },
-    []
+    [fetchProducts]
   );
 
   const updateProduct = useCallback(

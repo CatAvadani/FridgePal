@@ -1,6 +1,6 @@
 import CameraZoomControls from '@/components/CameraZoomControls';
 import { useAlert } from '@/hooks/useCustomAlert';
-import { analyzeImageWithAI } from '@/services/aiAnalysisApi'; // Import both
+import { analyzeImageWithAI } from '@/services/aiAnalysisApi';
 import { Feather } from '@expo/vector-icons';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
@@ -52,7 +52,6 @@ export default function CameraScreen() {
             Math.pow(touch2.pageX - touch1.pageX, 2) +
               Math.pow(touch2.pageY - touch1.pageY, 2)
           );
-          // Normalize distance to zoom value (0-1)
           const normalizedZoom = Math.min(
             Math.max((distance - 100) / 200, 0),
             1
@@ -87,6 +86,42 @@ export default function CameraScreen() {
   const toggleCamera = () =>
     setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
 
+  const processImageForAndroid = async (
+    originalUri: string
+  ): Promise<string> => {
+    try {
+      console.log('Processing image for Android:', originalUri);
+
+      // Create a more compatible filename
+      const timestamp = Date.now();
+      const filename = `photo_${timestamp}.jpg`;
+
+      // Use documentDirectory instead of cacheDirectory for better persistence
+      const processedUri = `${FileSystem.documentDirectory}${filename}`;
+
+      console.log('Target processed URI:', processedUri);
+
+      // Copy the file to a more accessible location
+      await FileSystem.copyAsync({
+        from: originalUri,
+        to: processedUri,
+      });
+
+      // Verify the file exists and get info
+      const fileInfo = await FileSystem.getInfoAsync(processedUri);
+      console.log('Processed file info:', fileInfo);
+
+      if (!fileInfo.exists) {
+        throw new Error('Failed to process image file');
+      }
+
+      return processedUri;
+    } catch (error) {
+      console.error('Error processing image for Android:', error);
+      return originalUri;
+    }
+  };
+
   const handleSnap = async () => {
     if (cameraRef.current) {
       try {
@@ -96,25 +131,26 @@ export default function CameraScreen() {
 
         const photo = await cameraRef.current.takePictureAsync({
           base64: false,
-          quality: 0.7,
-          skipProcessing: true,
+          quality: 0.8,
+          skipProcessing: false,
+          exif: false,
         });
 
         let usableUri = photo.uri;
         console.log('Original photo URI:', usableUri);
 
-        // On Android, copy to cache
+        // Process image for Android compatibility
         if (Platform.OS === 'android') {
-          const cacheUri =
-            FileSystem.cacheDirectory + `photo_${Date.now()}.jpg`;
-          await FileSystem.copyAsync({ from: usableUri, to: cacheUri });
-          console.log('Copied photo to:', cacheUri);
-          usableUri = cacheUri;
+          usableUri = await processImageForAndroid(usableUri);
         }
 
-        // Test if file exists before proceeding
+        // Verify file accessibility before proceeding
         const fileInfo = await FileSystem.getInfoAsync(usableUri);
-        console.log('File info:', fileInfo);
+        console.log('Final file info before navigation:', fileInfo);
+
+        if (!fileInfo.exists) {
+          throw new Error('Image file is not accessible');
+        }
 
         if (isFromTakePhoto) {
           console.log('Triggering AI Analysis flow');
@@ -130,7 +166,7 @@ export default function CameraScreen() {
           });
         }
       } catch (error) {
-        console.log('Camera snap error:', error);
+        console.error('Camera snap error:', error);
         showAlert({
           title: 'Error',
           message: 'Failed to take picture. Please try again.',
