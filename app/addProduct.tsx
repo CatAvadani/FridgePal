@@ -39,36 +39,23 @@ export default function AddProductScreen() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    console.log('🔍 AddProduct useEffect - All params received:', params);
-
     if (params.photoUri && typeof params.photoUri === 'string') {
-      console.log('Setting photo URI:', params.photoUri);
       setSelectedImageUri(params.photoUri);
     }
 
     // Handle prefilled data from AI analysis
     if (params.fromAI === 'true') {
-      console.log(' AI Analysis data detected!');
-      console.log('Product Name:', params.productName);
-      console.log('Quantity:', params.quantity);
-      console.log('Category ID:', params.categoryId);
-      console.log('Expiration Date:', params.expirationDate);
-
       if (params.productName && typeof params.productName === 'string') {
-        console.log('Setting product name:', params.productName);
         setProductName(params.productName);
       }
       if (params.quantity && typeof params.quantity === 'string') {
-        console.log('Setting quantity:', params.quantity);
         setQuantity(params.quantity);
       }
       if (params.categoryId && typeof params.categoryId === 'string') {
         const categoryIdNum = parseInt(params.categoryId);
-        console.log('Setting category ID:', categoryIdNum);
         setCategoryId(categoryIdNum);
       }
       if (params.expirationDate && typeof params.expirationDate === 'string') {
-        console.log('Setting expiration date:', params.expirationDate);
         setExpirationDate(new Date(params.expirationDate));
       }
     } else {

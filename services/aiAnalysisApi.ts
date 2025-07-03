@@ -12,16 +12,12 @@ export const analyzeImageWithAI = async (
   imageUri: string
 ): Promise<AIAnalysisResult> => {
   try {
-    console.log('Starting AI analysis for image:', imageUri);
-
     const formData = new FormData();
     formData.append('Image', {
       uri: imageUri,
       type: 'image/jpeg',
       name: `analysis-${Date.now()}.jpg`,
     } as any);
-
-    console.log('Sending request to:', ENDPOINTS.AI_ANALYSIS);
 
     const backendResult: BackendAIResponse = await apiCall(
       ENDPOINTS.AI_ANALYSIS,
@@ -30,8 +26,6 @@ export const analyzeImageWithAI = async (
         body: formData,
       }
     );
-
-    console.log('Backend AI Analysis result:', backendResult);
 
     const result: AIAnalysisResult = {
       productName: backendResult.itemName,
@@ -42,7 +36,6 @@ export const analyzeImageWithAI = async (
       confidence: 0.9,
     };
 
-    console.log('Final result:', result);
     return result;
   } catch (error) {
     console.error('AI Analysis error:', error);

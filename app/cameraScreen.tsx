@@ -30,10 +30,6 @@ export default function CameraScreen() {
   const isFromTakePhoto = params.from === 'takePhoto';
   const isFromAddProduct = params.from === 'addProduct';
 
-  console.log('Camera Screen Params:', params);
-  console.log('isFromTakePhoto:', isFromTakePhoto);
-  console.log('isFromAddProduct:', isFromAddProduct);
-
   // Pinch to zoom handler
   const pinchGesture = useRef(
     PanResponder.create({
@@ -90,16 +86,12 @@ export default function CameraScreen() {
     originalUri: string
   ): Promise<string> => {
     try {
-      console.log('Processing image for Android:', originalUri);
-
       // Create a more compatible filename
       const timestamp = Date.now();
       const filename = `photo_${timestamp}.jpg`;
 
       // Use documentDirectory instead of cacheDirectory for better persistence
       const processedUri = `${FileSystem.documentDirectory}${filename}`;
-
-      console.log('Target processed URI:', processedUri);
 
       // Copy the file to a more accessible location
       await FileSystem.copyAsync({
@@ -109,7 +101,6 @@ export default function CameraScreen() {
 
       // Verify the file exists and get info
       const fileInfo = await FileSystem.getInfoAsync(processedUri);
-      console.log('Processed file info:', fileInfo);
 
       if (!fileInfo.exists) {
         throw new Error('Failed to process image file');
@@ -125,10 +116,6 @@ export default function CameraScreen() {
   const handleSnap = async () => {
     if (cameraRef.current) {
       try {
-        console.log('Taking picture...');
-        console.log('Flow check - isFromTakePhoto:', isFromTakePhoto);
-        console.log('Flow check - isFromAddProduct:', isFromAddProduct);
-
         const photo = await cameraRef.current.takePictureAsync({
           base64: false,
           quality: 0.8,
@@ -137,7 +124,6 @@ export default function CameraScreen() {
         });
 
         let usableUri = photo.uri;
-        console.log('Original photo URI:', usableUri);
 
         // Process image for Android compatibility
         if (Platform.OS === 'android') {
@@ -146,17 +132,14 @@ export default function CameraScreen() {
 
         // Verify file accessibility before proceeding
         const fileInfo = await FileSystem.getInfoAsync(usableUri);
-        console.log('Final file info before navigation:', fileInfo);
 
         if (!fileInfo.exists) {
           throw new Error('Image file is not accessible');
         }
 
         if (isFromTakePhoto) {
-          console.log('Triggering AI Analysis flow');
           await handleAIAnalysis(usableUri);
         } else {
-          console.log('Triggering Manual flow');
           router.push({
             pathname: '/addProduct',
             params: {
@@ -179,11 +162,7 @@ export default function CameraScreen() {
     try {
       setIsAnalyzing(true);
 
-      console.log('Starting AI analysis for image:', imageUri);
-
       const analysisResult = await analyzeImageWithAI(imageUri);
-
-      console.log('AI Analysis result:', analysisResult);
 
       // Navigate to AddProduct with prefilled data
       router.push({

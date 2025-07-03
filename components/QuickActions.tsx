@@ -7,12 +7,10 @@ const QuickActions = () => {
   const router = useRouter();
 
   const handleAddProduct = () => {
-    console.log(' Add Product button clicked - navigating to addProduct');
     router.push('/addProduct');
   };
 
   const handleTakePhoto = () => {
-    console.log('Take Photo button clicked - navigating with from=takePhoto');
     router.push('/cameraScreen?from=takePhoto');
   };
 
