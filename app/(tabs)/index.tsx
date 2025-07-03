@@ -73,7 +73,7 @@ export default function HomeScreen() {
       />
       <View className=' items-center'>
         <Image
-          source={require('@/assets/images/Fridge_image.png')}
+          source={require('@/assets/images/Fridge_image.webp')}
           className='w-full h-80 position-absolute top-0 left-0 right-0'
           resizeMode='cover'
           style={{ marginTop: imageMarginTop }}

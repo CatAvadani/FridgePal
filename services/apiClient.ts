@@ -36,20 +36,9 @@ export const apiCall = async (
       }
     }
 
-    console.log('Final request:', {
-      url,
-      method: requestOptions.method,
-      headers: requestOptions.headers,
-      body:
-        typeof requestOptions.body === 'string'
-          ? requestOptions.body
-          : 'FormData',
-    });
-
     const response = await fetch(url, requestOptions);
 
     if (!response.ok) {
-      console.log('Response status:', response.status);
       const responseText = await response.text();
       console.log('Response text:', responseText);
       throw new Error(`API error: ${response.status} ${response.statusText}`);

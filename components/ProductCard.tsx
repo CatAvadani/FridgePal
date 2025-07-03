@@ -78,10 +78,6 @@ const ProductCard = ({
   }, [translateX]);
 
   useEffect(() => {
-    // This line is added for demo purposes to reset the demo status
-    // TODO: Remove this line in production to keep demo status persistent
-    AsyncStorage.removeItem('hasSeenSwipeDemo');
-
     const checkDemoStatus = async () => {
       try {
         const hasSeenBefore = await AsyncStorage.getItem('hasSeenSwipeDemo');
