@@ -38,6 +38,8 @@ export default function AddProductScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const wasFromAI = params.fromAI === 'true';
+
   useEffect(() => {
     if (params.photoUri && typeof params.photoUri === 'string') {
       setSelectedImageUri(params.photoUri);
@@ -69,7 +71,11 @@ export default function AddProductScreen() {
   };
 
   const handleAddImage = () => {
-    router.push('/cameraScreen?from=addProduct');
+    if (wasFromAI) {
+      router.push('/cameraScreen?from=takePhoto');
+    } else {
+      router.push('/cameraScreen?from=addProduct');
+    }
   };
 
   const handleSave = async () => {
@@ -267,7 +273,7 @@ export default function AddProductScreen() {
           <View className='flex-row gap-4 mt-6'>
             <TouchableOpacity
               className='flex-1 button-secondary border border-primary dark:bg-transparent p-4 rounded-lg'
-              onPress={() => router.back()}
+              onPress={() => router.replace('/')}
               disabled={saving}
             >
               <Text className='text-center text-primary font-semibold'>

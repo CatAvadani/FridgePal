@@ -30,6 +30,7 @@ export default function CameraScreen() {
   const { showAlert } = useAlert();
   const params = useLocalSearchParams();
 
+  // Check if this is for AI analysis (from takePhoto button)
   const isFromTakePhoto = params.from === 'takePhoto';
 
   // Pinch to zoom handler
@@ -169,6 +170,14 @@ export default function CameraScreen() {
     setTimeout(() => setShowZoomSlider(false), ZOOM_HIDE_DELAY);
   };
 
+  const handleBack = () => {
+    if (isFromTakePhoto) {
+      router.replace('/');
+    } else {
+      router.back();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <CameraView
@@ -179,7 +188,7 @@ export default function CameraScreen() {
       />
 
       <View style={StyleSheet.absoluteFillObject} {...pinchGesture.panHandlers}>
-        <CameraHeader onClose={() => router.back()} />
+        <CameraHeader onClose={handleBack} />
 
         {isAnalyzing && <AnalyzingOverlay />}
 
