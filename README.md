@@ -1,7 +1,7 @@
 # FridgePal
 
 <div align="left">
-  <img src="assets/images/phones.png" alt="phone views of the app" width="400"/>
+  <img src="assets/images/phones.png" alt="phone views of the app" width="500"/>
 </div>
 
 Your smart kitchen companion that helps you reduce food waste and save money! FridgePal uses your phone's camera to scan and identify food products, automatically tracking their expiration dates so you never have to guess what's fresh in your fridge.
@@ -29,7 +29,7 @@ Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll
 
 ## Project Structure
 
-````
+```
 fridgepal/
 ├── app/ # App screens (file-based routing)
 │ ├── (tabs)/ # Tab navigation screens
@@ -57,7 +57,9 @@ fridgepal/
 ├── ...other config files
 ├── package.json
 
-## CI/CD Pipeline
+```
+
+## CD/CI Pipelines
 
 This project uses **GitHub Actions** for Continuous Integration to ensure code quality and catch issues early.
 
@@ -100,7 +102,7 @@ git clone https://github.com/mohald-3/FridgePalFE.git
 cd FridgePalFE
 
 npm install
-````
+```
 
 ### 2. Start the Development Server
 
@@ -213,7 +215,9 @@ npx tsc --noEmit
 npm audit
 ```
 
-````
+```
+
+```
 
 ## Development Commands
 
@@ -234,7 +238,7 @@ npx expo start --web        # Web only
 # Build for production (requires Expo account)
 npx expo build:ios
 npx expo build:android
-````
+```
 
 ## Troubleshooting
 
@@ -261,17 +265,23 @@ xcode-select --install
 npx expo start --clear
 ```
 
+```
 **Android Emulator issues**
 
 - Make sure virtualization is enabled in BIOS
 - Ensure emulator is running before starting Expo
 - Check if `adb devices` shows your emulator
+```
 
 **NativeWind styles not working**
 
 ```bash
 # Clear cache and restart
 npx expo start --clear
+```
+
+```
+
 ```
 
 ### Getting Help:
@@ -282,7 +292,7 @@ npx expo start --clear
 
 ## Contributors
 
-- **Catalina Avadani** – [GitHub](https://github.com/CatAvadani) ·
-- **Mohanad Al-Daghestani** – [GitHub](https://github.com/mohald-3)
+- **Catalina Avadani** Frontend – [GitHub](https://github.com/CatAvadani) ·
+- **Mohanad Al-Daghestani** Backend– [GitHub](https://github.com/mohald-3)
 
 _Built during the 2025 Summer Hackathon._
