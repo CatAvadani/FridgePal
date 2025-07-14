@@ -8,7 +8,7 @@ import { PaperProvider } from 'react-native-paper';
 import 'react-native-reanimated';
 import '../global.css';
 
-// This hidden component forces Tailwind to include all the color utility classes used by getExpiryColorClass(). Since Tailwind relies on static class detection, dynamically generated class names won't be included unless they're explicitly used somewhere.
+// This hidden component forces Tailwind to include all the color utility classes used by getExpiryColorClass().
 const ExpiryColorPresets = () => (
   <View className='hidden'>
     <Text className='text-red-700 dark:text-red-400' />
@@ -30,9 +30,14 @@ export default function RootLayout() {
 
             <Stack>
               <Stack.Screen
-                name='(tabs)'
-                options={{ headerShown: false, title: '' }}
+                name='index'
+                options={{ headerShown: false, title: 'Welcome' }}
               />
+
+              <Stack.Screen name='login' options={{ headerShown: false }} />
+              <Stack.Screen name='register' options={{ headerShown: false }} />
+
+              <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
               <Stack.Screen
                 name='addProduct'
                 options={{
