@@ -3,13 +3,16 @@ import {
   Product,
   ProductDisplay,
 } from '@/types/interfaces';
-import { convertToProductDisplay } from '@/utils/productUtils';
+import {
+  convertToProductDisplay,
+  mapSupabaseProductToProduct,
+} from '@/utils/productUtils';
 import { supabase } from './supabase';
+
+const PRODUCT_IMAGES_BUCKET = 'product-images';
 
 export const getProducts = async (): Promise<ProductDisplay[]> => {
   try {
-    console.log('Starting getProducts...');
-
     const { data, error } = await supabase
       .from('products')
       .select(
@@ -23,36 +26,10 @@ export const getProducts = async (): Promise<ProductDisplay[]> => {
       )
       .order('created_at', { ascending: false });
 
-    console.log('Supabase response:', { data, error });
+    if (error) throw error;
+    if (!data) return [];
 
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
-
-    if (!data) {
-      console.log('No products found');
-      return [];
-    }
-
-    console.log(`Found ${data.length} products`);
-
-    // Convert to your existing Product interface format - simplified
-    const products: Product[] = data.map(
-      (item: any) =>
-        ({
-          itemId: item.id,
-          productName: item.product_name,
-          quantity: item.quantity,
-          creationDate: item.created_at,
-          expirationDate: item.expiration_date,
-          notified: false,
-          categoryId: item.category_id,
-          categoryName: item.categories?.name || 'Unknown',
-          imageUrl: item.image_url || undefined,
-        }) as Product
-    );
-
+    const products: Product[] = data.map(mapSupabaseProductToProduct);
     return products.map(convertToProductDisplay);
   } catch (error) {
     console.error('💥 Error fetching products:', error);
@@ -65,7 +42,6 @@ export const createProduct = async (
   imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
-    // Upload image if provided
     let imageUrl = null;
     if (imageUri) {
       imageUrl = await uploadImage(imageUri);
@@ -91,24 +67,10 @@ export const createProduct = async (
       )
       .single();
 
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
+    if (error) throw error;
+    if (!data) throw new Error('Product not created');
 
-    // Convert to your existing Product interface format
-    const product: Product = {
-      itemId: data.id,
-      productName: data.product_name,
-      quantity: data.quantity,
-      creationDate: data.created_at,
-      expirationDate: data.expiration_date,
-      notified: false,
-      categoryId: data.category_id,
-      categoryName: data.categories?.name || 'Unknown',
-      imageUrl: data.image_url || undefined,
-    };
-
+    const product: Product = mapSupabaseProductToProduct(data);
     return convertToProductDisplay(product);
   } catch (error) {
     console.error('Error creating product:', error);
@@ -122,12 +84,11 @@ export const updateProduct = async (
   imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
-    // Upload new image if provided
     let imageUrl = undefined;
     if (imageUri) {
       imageUrl = await uploadImage(imageUri);
     } else if (imageUri === null) {
-      imageUrl = null; // Explicitly remove image
+      imageUrl = null;
     }
 
     const updateData: any = {};
@@ -156,24 +117,10 @@ export const updateProduct = async (
       )
       .single();
 
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
+    if (error) throw error;
+    if (!data) throw new Error('Product not updated');
 
-    // Convert to your existing Product interface format
-    const product: Product = {
-      itemId: data.id,
-      productName: data.product_name,
-      quantity: data.quantity,
-      creationDate: data.created_at,
-      expirationDate: data.expiration_date,
-      notified: false,
-      categoryId: data.category_id,
-      categoryName: data.categories?.name || 'Unknown',
-      imageUrl: data.image_url || undefined,
-    };
-
+    const product: Product = mapSupabaseProductToProduct(data);
     return convertToProductDisplay(product);
   } catch (error) {
     console.error('Error updating product:', error);
@@ -189,100 +136,54 @@ export const deleteProduct = async (itemId: string): Promise<void> => {
       .eq('id', itemId)
       .single();
 
-    if (fetchError) {
+    if (fetchError)
       console.error('Error fetching product for deletion:', fetchError);
-    }
 
-    // Delete the image from storage FIRST if it exists
     if (product?.image_url) {
       try {
-        console.log('Full image URL:', product.image_url);
+        const imageUrl = product.image_url;
+        const filePath = imageUrl.split(`/${PRODUCT_IMAGES_BUCKET}/`)[1];
 
-        // Extract filename from URL - handle Supabase storage URL format
-        // URL format: https://project.supabase.co/storage/v1/object/public/product-images/filename.jpg
-        const urlParts = product.image_url.split('/');
-        const fileName = urlParts[urlParts.length - 1]; // Get the last part
-
-        console.log('Extracted filename:', fileName);
-
-        if (fileName && fileName !== '') {
-          console.log('Attempting to delete image from storage:', fileName);
-
-          const { data: deleteData, error: storageError } =
-            await supabase.storage.from('product-images').remove([fileName]);
-
-          console.log('Storage deletion result:', {
-            deleteData,
-            storageError,
-          });
-
-          if (storageError) {
-            console.warn(' Storage deletion failed:', storageError);
-          } else {
-            console.log('Image successfully deleted from storage');
-          }
-        } else {
-          console.warn('Could not extract filename from URL');
+        if (filePath) {
+          const { error: storageError } = await supabase.storage
+            .from(PRODUCT_IMAGES_BUCKET)
+            .remove([filePath]);
+          if (storageError)
+            console.warn('Storage deletion failed:', storageError);
         }
       } catch (imageError) {
         console.warn('Error during image deletion:', imageError);
       }
-    } else {
-      console.log('No image to delete');
     }
 
-    // Delete the product from database
     const { error: deleteError } = await supabase
       .from('products')
       .delete()
       .eq('id', itemId);
 
-    if (deleteError) {
-      console.error('Supabase error:', deleteError);
-      throw deleteError;
-    }
-
-    console.log('Product deleted from database');
+    if (deleteError) throw deleteError;
   } catch (error) {
     console.error('Error deleting product:', error);
     throw error;
   }
 };
 
-// Helper function to upload image to Supabase Storage
 const uploadImage = async (imageUri: string): Promise<string> => {
   try {
-    console.log('Starting image upload...');
-    console.log('Image URI:', imageUri);
-
-    // For React Native, use FormData approach which works better on mobile
     const formData = new FormData();
-
-    // Create unique filename
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
-    console.log('Filename:', fileName);
-
-    // Add file to FormData - React Native handles this natively
     formData.append('file', {
       uri: imageUri,
       type: 'image/jpeg',
       name: fileName,
     } as any);
 
-    console.log('FormData created for React Native');
-
-    // Use direct fetch to Supabase Storage API
     const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabaseUrl || !supabaseKey)
       throw new Error('Supabase credentials not found');
-    }
 
-    const uploadUrl = `${supabaseUrl}/storage/v1/object/product-images/${fileName}`;
-    console.log('Upload URL:', uploadUrl);
-
-    console.log(' Uploading via direct API call...');
+    const uploadUrl = `${supabaseUrl}/storage/v1/object/${PRODUCT_IMAGES_BUCKET}/${fileName}`;
     const response = await fetch(uploadUrl, {
       method: 'POST',
       headers: {
@@ -292,18 +193,12 @@ const uploadImage = async (imageUri: string): Promise<string> => {
       body: formData,
     });
 
-    console.log(' Upload response status:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(' Upload failed:', response.status, errorText);
       throw new Error(`Upload failed: ${response.status} - ${errorText}`);
     }
 
-    // Build public URL manually
-    const publicUrl = `${supabaseUrl}/storage/v1/object/public/product-images/${fileName}`;
-    console.log(' Public URL:', publicUrl);
-
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${fileName}`;
     return publicUrl;
   } catch (error) {
     console.error('Error uploading image:', error);

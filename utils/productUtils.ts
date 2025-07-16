@@ -21,6 +21,18 @@ export const convertToProductDisplay = (product: Product): ProductDisplay => {
   };
 };
 
+export const mapSupabaseProductToProduct = (item: any): Product => ({
+  itemId: item.id,
+  productName: item.product_name,
+  quantity: item.quantity,
+  creationDate: item.created_at,
+  expirationDate: item.expiration_date,
+  notified: false,
+  categoryId: item.category_id,
+  categoryName: item.categories?.name || 'Unknown',
+  imageUrl: item.image_url || undefined,
+});
+
 // Fallback images when no custom image is provided
 export const getImageUrlForProduct = (
   productName: string | undefined,
