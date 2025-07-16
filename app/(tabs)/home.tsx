@@ -13,7 +13,6 @@ import {
   ScrollView,
   StatusBar,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import {
@@ -63,25 +62,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleLogout = () => {
-    showAlert({
-      title: 'Logout',
-      message: 'Are you sure you want to logout?',
-      icon: 'alert-circle',
-      buttons: [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            //Todo: Add logout logic here (clear tokens, etc.)
-            router.replace('/login');
-          },
-        },
-      ],
-    });
-  };
-
   // Calculate the negative margin to extend image to top of screen
   const imageMarginTop =
     Platform.OS === 'ios' ? -insets.top : -(StatusBar.currentHeight ?? 0);
@@ -124,17 +104,9 @@ export default function HomeScreen() {
         }
       >
         <View className='px-5 py-6'>
-          <View className='flex-row items-center justify-between mb-4'>
-            <Text className='text-3xl font-bold text-gray-800 dark:text-white'>
-              Welcome, {userName}!
-            </Text>
-            <TouchableOpacity
-              onPress={handleLogout}
-              className='bg-red-500 px-3 py-2 rounded-md w-20 items-center'
-            >
-              <Text className='text-white text-sm font-bold'>Logout</Text>
-            </TouchableOpacity>
-          </View>
+          <Text className='text-3xl font-bold text-gray-800 dark:text-white'>
+            Welcome, {userName}!
+          </Text>
           <Text className='text-base text-gray-600 mt-1 dark:text-gray-300'>
             Keep your food fresh.
           </Text>
