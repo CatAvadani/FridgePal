@@ -3,7 +3,7 @@ import {
   deleteProduct as deleteProductApi,
   getProducts,
   updateProduct as updateProductApi,
-} from '@/services/productApi';
+} from '@/services/supabaseProductService';
 import { CreateProductRequest, ProductDisplay } from '@/types/interfaces';
 import React, {
   createContext,
