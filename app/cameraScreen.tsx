@@ -7,7 +7,7 @@ import {
 } from '@/components/camera/CameraComponents';
 import CameraZoomControls from '@/components/camera/CameraZoomControls';
 import { useAlert } from '@/hooks/useCustomAlert';
-import { analyzeImageWithAI } from '@/services/aiAnalysisApi';
+import { analyzeImageWithAI } from '@/services/openaiAnalysisService';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
