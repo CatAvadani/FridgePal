@@ -1,5 +1,7 @@
 # FridgePal
 
+**🏆 Clean Code Hackathon 2025 - First Place Winner 🏆**
+
 <div align="left">
   <img src="assets/images/phones.png" alt="phone views of the app" width="100%"/>
 </div>
@@ -177,8 +179,9 @@ npm audit
 
 ## Acknowledgments
 
-- Originally conceived during a 2025 Summer Hackathon
+- 🥇 **Originally conceived during Clean Code Hackathon 2025 – First Place Winner!** 🥇
 - Thanks to [Mohanad Al-Daghestani](https://github.com/mohald-3) for the initial collaboration and architectural foundation
+- **Evolved into full-stack solo project** with independent Supabase backend, OpenAI integration, and production-ready architecture
 - Built with modern React Native and Supabase technologies
 
 ## Author
