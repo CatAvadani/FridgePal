@@ -1,113 +1,77 @@
+import AuthButton from '@/components/auth/AuthButton';
+import AuthHeader from '@/components/auth/AuthHeader';
+import AuthInput from '@/components/auth/AuthInput';
+import AuthLayout from '@/components/auth/AuthLayout';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!username || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    // Simulate login process
     try {
-      // Add login logic here
-      // For now, simulate a successful login
-      console.log('Login attempt:', { email, password });
-
-      // Simulate API call delay
+      console.log('Login attempt:', { username, password });
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       router.replace('/(tabs)/home');
     } catch (error) {
       Alert.alert('Login Failed', 'Invalid credentials');
     }
   };
 
+  const handleForgotPassword = () => {
+    Alert.alert(
+      'Forgot Password',
+      'Password reset functionality would go here'
+    );
+  };
+
   const navigateToRegister = () => {
-    router.push('/register');
+    router.replace('/register');
   };
 
   return (
-    <SafeAreaView className='flex-1 bg-gray-50'>
-      <KeyboardAvoidingView
-        className='flex-1'
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <ScrollView className='flex-1'>
-          <View className='flex-1 justify-center px-6 py-12'>
-            <View className='mb-8'>
-              <Text className='text-3xl font-bold text-gray-900 text-center mb-2'>
-                Welcome Back!
-              </Text>
-              <Text className='text-gray-600 text-center'>
-                Sign in to your FridgePal account
-              </Text>
-            </View>
+    <AuthLayout>
+      <View className='flex-1 justify-center'>
+        <AuthHeader title='Welcome back, Cat!' />
 
-            <View className='space-y-4'>
-              <View>
-                <Text className='text-sm font-medium text-gray-700 mb-2'>
-                  Email
-                </Text>
-                <TextInput
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg bg-white'
-                  placeholder='Enter your email'
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType='email-address'
-                  autoCapitalize='none'
-                />
-              </View>
+        <View className='gap-4 mb-6'>
+          <AuthInput
+            placeholder='Username'
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize='none'
+          />
+          <AuthInput
+            placeholder='Password'
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
 
-              <View>
-                <Text className='text-sm font-medium text-gray-700 mb-2'>
-                  Password
-                </Text>
-                <TextInput
-                  className='w-full px-4 py-3 border border-gray-300 rounded-lg bg-white'
-                  placeholder='Enter your password'
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                />
-              </View>
+        <AuthButton title='Sign In' onPress={handleLogin} />
 
-              <TouchableOpacity
-                className='w-full bg-primary py-3 rounded-lg mt-6'
-                onPress={handleLogin}
-              >
-                <Text className='text-white text-center font-semibold text-lg'>
-                  Sign In
-                </Text>
-              </TouchableOpacity>
+        <TouchableOpacity onPress={handleForgotPassword} className='mb-8'>
+          <Text className='text-blue-600 text-center font-medium'>
+            Forgot Password
+          </Text>
+        </TouchableOpacity>
 
-              <View className='flex-row justify-center mt-6'>
-                <Text className='text-gray-600'>
-                  Don&apos;t have an account?{' '}
-                </Text>
-                <TouchableOpacity onPress={navigateToRegister}>
-                  <Text className='text-blue-600 font-bold'>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <View className='flex-row justify-center'>
+          <Text className='text-gray-600'>Don&apos;t have an account? </Text>
+          <TouchableOpacity onPress={navigateToRegister}>
+            <Text className='text-blue-600 font-bold'>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </AuthLayout>
   );
 }
