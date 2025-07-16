@@ -109,7 +109,7 @@ export default function AddProductScreen() {
         message: `Product "${productName}" added successfully!`,
         icon: 'check-circle',
       });
-      router.replace('/');
+      router.replace('/(tabs)/home');
     } catch {
       showAlert({
         title: 'Error',
