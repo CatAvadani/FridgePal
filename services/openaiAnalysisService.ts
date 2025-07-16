@@ -24,13 +24,6 @@ const getDefaultShelfLife = (categoryName: string) => {
   }
 };
 
-const calculateExpirationDate = (days: number): string => {
-  const today = new Date();
-  const expirationDate = new Date(today);
-  expirationDate.setDate(today.getDate() + days);
-  return expirationDate.toISOString();
-};
-
 const getCategoryId = (categoryName: string): number => {
   const categories: { [key: string]: number } = {
     dairy: 1,
@@ -46,6 +39,13 @@ const getCategoryId = (categoryName: string): number => {
   return categories[lowerCaseName] || 8;
 };
 
+const calculateExpirationDate = (days: number): string => {
+  const today = new Date();
+  const expirationDate = new Date(today);
+  expirationDate.setDate(today.getDate() + days);
+  return expirationDate.toISOString();
+};
+
 export const analyzeImageWithAI = async (
   imageUri: string
 ): Promise<AIAnalysisResult> => {
@@ -54,28 +54,45 @@ export const analyzeImageWithAI = async (
 
     // Convert image to base64 for React Native
     const response = await fetch(imageUri);
-
-    // Use FileReader for React Native compatibility
     const base64 = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result);
-      };
+      reader.onload = () => resolve(reader.result as string);
       reader.onerror = reject;
       response.blob().then((blob) => reader.readAsDataURL(blob));
     });
 
     const prompt = `
-      Analyze this food product image and return ONLY a JSON object with these exact fields:
-      {
-        "productName": "name of the food item",
-        "categoryName": "dairy, meat, vegetables, fruits, fish, beverages, frozen, or other",
-        "quantity": [Estimate how many items you see in the image. If unclear, return 1.],
-        "shelfLifeDays": [Estimate shelf life based on category: dairy 7, meat 4, vegetables 5, fruits 7, fish 2, beverages 30, frozen 90, other 7]
-      }
-      No additional text, just the JSON object.
-    `;
+          You are a smart fridge assistant.
+
+          Here is the list of categories you must use:
+            [
+              { "categoryId": 1, "categoryName": "dairy" },
+              { "categoryId": 2, "categoryName": "meat" },
+              { "categoryId": 3, "categoryName": "vegetables" },
+              { "categoryId": 4, "categoryName": "fruits" },
+              { "categoryId": 5, "categoryName": "fish" },
+              { "categoryId": 6, "categoryName": "beverages" },
+              { "categoryId": 7, "categoryName": "frozen" },
+              { "categoryId": 8, "categoryName": "other" }
+         ]
+
+          Estimate for the image:
+          - productName: the most likely food name (string)
+          - categoryId: integer from the list above
+          - categoryName: string from the list above (exact match)
+          - quantity: integer, estimated visible items
+          - shelfLifeDays: integer, days the item typically lasts in a fridge for that category
+
+          Respond ONLY with valid pure JSON in this format:
+       {
+         "productName": "...",
+         "categoryId": ...,
+         "categoryName": "...",
+         "quantity": ...,
+         "shelfLifeDays": ...
+    }
+         No markdown or explanation, just JSON.
+        `.trim();
 
     const openAIResponse = await fetch(
       'https://api.openai.com/v1/chat/completions',
@@ -99,7 +116,7 @@ export const analyzeImageWithAI = async (
               ],
             },
           ],
-          max_tokens: 150,
+          max_tokens: 300,
           temperature: 0.1,
         }),
       }
@@ -113,7 +130,7 @@ export const analyzeImageWithAI = async (
     }
 
     const data = await openAIResponse.json();
-    const content = data.choices[0]?.message?.content;
+    const content = data.choices?.[0]?.message?.content;
     if (!content) throw new Error('No content in OpenAI response');
 
     // Clean the content before parsing
@@ -122,12 +139,10 @@ export const analyzeImageWithAI = async (
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '');
 
-    // Parse the JSON response
-    let aiResult;
+    let aiResult: any;
     try {
       aiResult = JSON.parse(cleanContent);
-    } catch (parseError) {
-      // Fallback: try to extract JSON from the response
+    } catch {
       const jsonMatch = cleanContent.match(/\{[^}]*\}/);
       if (jsonMatch) {
         aiResult = JSON.parse(jsonMatch[0]);
@@ -136,15 +151,26 @@ export const analyzeImageWithAI = async (
       }
     }
 
-    const categoryName = aiResult.categoryName || 'other';
+    // Use fallback if missing values
+    const categoryName =
+      aiResult.categoryName && typeof aiResult.categoryName === 'string'
+        ? aiResult.categoryName.toLowerCase()
+        : 'other';
     const shelfLife =
       aiResult.shelfLifeDays || getDefaultShelfLife(categoryName);
+    const categoryId =
+      aiResult.categoryId && typeof aiResult.categoryId === 'number'
+        ? aiResult.categoryId
+        : getCategoryId(categoryName);
 
     const result: AIAnalysisResult = {
       productName: aiResult.productName || 'Unknown Product',
       categoryName,
-      categoryId: getCategoryId(categoryName),
-      quantity: aiResult.quantity || 1,
+      categoryId,
+      quantity:
+        typeof aiResult.quantity === 'number' && aiResult.quantity > 0
+          ? aiResult.quantity
+          : 1,
       expirationDate: calculateExpirationDate(shelfLife),
       confidence: 0.9,
     };
