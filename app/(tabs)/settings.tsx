@@ -5,7 +5,7 @@ import { notificationManager } from '@/services/notificationManager';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Platform,
@@ -27,6 +27,20 @@ export default function SettingsScreen() {
   // Settings states
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+
+  // Load current notification preferences on mount
+  useEffect(() => {
+    loadNotificationPreferences();
+  }, []);
+
+  const loadNotificationPreferences = async () => {
+    try {
+      const prefs = await notificationManager.getPreferences();
+      setNotificationsEnabled(prefs.enabled);
+    } catch (error) {
+      console.error('Error loading notification preferences:', error);
+    }
+  };
 
   const handleLogout = () => {
     showAlert({
@@ -54,11 +68,21 @@ export default function SettingsScreen() {
     });
   };
 
-  //  test functions
+  // Fixed notification toggle handler
+  const handleNotificationToggle = async (enabled: boolean) => {
+    try {
+      await notificationManager.updatePreferences({ enabled });
+      setNotificationsEnabled(enabled);
+      console.log('Notification preferences updated:', { enabled });
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
+    }
+  };
+
+  // Test functions
   const debugNotifications = async () => {
     console.log('=== NOTIFICATION DEBUG ===');
 
-    // Check current preferences
     try {
       const prefs = await notificationManager.getPreferences();
       console.log('Current preferences:', prefs);
@@ -66,11 +90,9 @@ export default function SettingsScreen() {
       console.log('Error getting preferences:', error);
     }
 
-    // Check permissions
     const permissions = await Notifications.getPermissionsAsync();
     console.log('Permissions:', permissions.status);
 
-    // Check scheduled notifications
     const scheduled = await notificationManager.getScheduledNotifications();
     console.log('Scheduled count:', scheduled.length);
 
@@ -106,6 +128,30 @@ export default function SettingsScreen() {
     console.log(
       'Test notification scheduled - background the app and wait 10 seconds'
     );
+  };
+
+  // Quick test notification with current time + 1 minute
+  const testQuickNotification = async () => {
+    const testTime = new Date();
+    testTime.setMinutes(testTime.getMinutes() + 1);
+    const timeString = testTime.toTimeString().slice(0, 5); // "HH:MM"
+
+    try {
+      await notificationManager.updatePreferences({
+        notificationTime: timeString,
+        daysBeforeExpiry: 0,
+      });
+      console.log(`Updated notification time to ${timeString} for testing`);
+
+      showAlert({
+        title: 'Test Setup',
+        message: `Notification time set to ${timeString}. Create a product with today's expiration date to test!`,
+        icon: 'check-circle',
+        buttons: [{ text: 'OK', style: 'default' }],
+      });
+    } catch (error) {
+      console.error('Error setting test time:', error);
+    }
   };
 
   const SectionHeader = ({ title }: { title: string }) => (
@@ -158,7 +204,7 @@ export default function SettingsScreen() {
           subtitle='Get alerts when food is about to expire'
           isToggle={true}
           toggleValue={notificationsEnabled}
-          onToggle={setNotificationsEnabled}
+          onToggle={handleNotificationToggle}
         />
         <SettingsItem
           title='Dark Mode'
@@ -191,28 +237,45 @@ export default function SettingsScreen() {
         />
 
         <View className='h-6' />
-        {/*  test buttons - temporarily */}
-        <View className='px-4 py-4 bg-yellow-100 m-4 rounded-lg'>
-          <Text className='text-lg font-bold mb-4'>Notification Testing</Text>
 
-          <TouchableOpacity
-            onPress={debugNotifications}
-            className='bg-blue-500 p-3 rounded-lg mb-2'
-          >
-            <Text className='text-white text-center font-semibold'>
-              Debug Notifications
-            </Text>
-          </TouchableOpacity>
+        {/* Development Testing Section */}
+        {__DEV__ && (
+          <>
+            <SectionHeader title='Development' />
+            <View className='px-4 py-4 bg-yellow-100 m-4 rounded-lg'>
+              <Text className='text-lg font-bold mb-4'>
+                Notification Testing
+              </Text>
 
-          <TouchableOpacity
-            onPress={testImmediateNotification}
-            className='bg-green-500 p-3 rounded-lg'
-          >
-            <Text className='text-white text-center font-semibold'>
-              Test Immediate (10 sec)
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <TouchableOpacity
+                onPress={debugNotifications}
+                className='bg-blue-500 p-3 rounded-lg mb-2'
+              >
+                <Text className='text-white text-center font-semibold'>
+                  Debug Notifications
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={testImmediateNotification}
+                className='bg-green-500 p-3 rounded-lg mb-2'
+              >
+                <Text className='text-white text-center font-semibold'>
+                  Test Immediate (10 sec)
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={testQuickNotification}
+                className='bg-purple-500 p-3 rounded-lg'
+              >
+                <Text className='text-white text-center font-semibold'>
+                  Set Test Time (+1 min)
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

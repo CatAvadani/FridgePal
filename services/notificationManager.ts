@@ -2,6 +2,7 @@ import { ProductDisplay } from '@/types/interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
+import { Platform } from 'react-native';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -16,6 +17,7 @@ interface NotificationPreferences {
   enabled: boolean;
   notificationTime: string;
   daysBeforeExpiry: number;
+  version?: number;
 }
 
 const BACKGROUND_TASK_NAME = 'EXPIRY_NOTIFICATION_TASK';
@@ -34,6 +36,17 @@ class NotificationManager {
   async initialize(): Promise<boolean> {
     try {
       console.log('Initializing notification manager...');
+
+      // Skip notification setup on Android + Expo Go
+      if (Platform.OS === 'android' && __DEV__) {
+        // Check if we're in Expo Go vs development build
+        try {
+          await Notifications.getPermissionsAsync();
+        } catch (error) {
+          console.log('Skipping notifications on Android Expo Go');
+          return false;
+        }
+      }
 
       const hasPermissions = await this.requestPermissions();
       if (!hasPermissions) {
@@ -69,7 +82,6 @@ class NotificationManager {
     }
   }
 
-  //  NOTIFICATION SCHEDULING
   async scheduleProductNotification(product: ProductDisplay): Promise<void> {
     console.log('=== SCHEDULE FUNCTION CALLED ===', product.productName);
     try {
@@ -102,13 +114,11 @@ class NotificationManager {
       );
       console.log('=======================================');
 
-      // Don't schedule if date is in the past
       if (notificationDate <= new Date()) {
         console.log('Notification date is in the past, skipping');
         return;
       }
 
-      // Calculate days until expiry for notification message
       const daysUntilExpiry = Math.ceil(
         (new Date(product.expirationDate).getTime() -
           notificationDate.getTime()) /
@@ -141,6 +151,7 @@ class NotificationManager {
       console.error('Failed to schedule notification:', error);
     }
   }
+
   async cancelProductNotifications(productId: string): Promise<void> {
     try {
       const scheduled = await Notifications.getAllScheduledNotificationsAsync();
@@ -175,10 +186,7 @@ class NotificationManager {
   async rescheduleAllNotifications(products: ProductDisplay[]): Promise<void> {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
-
-      // Schedule new notifications
       await this.scheduleAllProductNotifications(products);
-
       console.log('All notifications rescheduled');
     } catch (error) {
       console.error('Failed to reschedule notifications:', error);
@@ -203,14 +211,8 @@ class NotificationManager {
 
   private async runBackgroundCheck(): Promise<void> {
     try {
-      // This would be called daily in the background
-      // For now, we'll just log - need to implement actual product checking here
       console.log('Running background notification check...');
-
       // TODO: Implement background sync with your product data
-      // 1. Get all user products
-      // 2. Check for items expiring in 3 days
-      // 3. Ensure notifications are scheduled
     } catch (error) {
       console.error('Background check failed:', error);
     }
@@ -224,10 +226,8 @@ class NotificationManager {
     const expiryDate = new Date(expirationDate);
     const notificationDate = new Date(expiryDate);
 
-    // Set to X days before expiry
     notificationDate.setDate(expiryDate.getDate() - daysBeforeExpiry);
 
-    // Set specific time (e.g., 9:00 AM)
     const [hours, minutes] = notificationTime.split(':');
     notificationDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
@@ -235,21 +235,44 @@ class NotificationManager {
   }
 
   async getPreferences(): Promise<NotificationPreferences> {
+    const isProduction = !__DEV__;
+
+    const defaultPreferences: NotificationPreferences = {
+      enabled: true,
+      notificationTime: isProduction ? '09:00' : '09:00', // Can be customized via settings
+      daysBeforeExpiry: isProduction ? 3 : 0, // Immediate in dev for testing
+      version: 1,
+    };
+
     try {
       const stored = await AsyncStorage.getItem(PREFERENCES_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const storedPrefs = JSON.parse(stored);
+
+        // In development, allow dynamic updates but preserve user changes
+        if (!isProduction && !storedPrefs.userModified) {
+          // Keep defaults fresh in development unless user explicitly changed them
+          const updatedPrefs = { ...defaultPreferences, ...storedPrefs };
+          await AsyncStorage.setItem(
+            PREFERENCES_KEY,
+            JSON.stringify(updatedPrefs)
+          );
+          return updatedPrefs;
+        }
+
+        // In production or if user modified, use stored preferences but ensure all properties exist
+        return { ...defaultPreferences, ...storedPrefs };
       }
     } catch (error) {
       console.error('Failed to get preferences:', error);
     }
 
-    // Default preferences
-    return {
-      enabled: true,
-      notificationTime: '17:58',
-      daysBeforeExpiry: 0,
-    };
+    // Save and return defaults
+    await AsyncStorage.setItem(
+      PREFERENCES_KEY,
+      JSON.stringify(defaultPreferences)
+    );
+    return defaultPreferences;
   }
 
   async updatePreferences(
@@ -257,7 +280,11 @@ class NotificationManager {
   ): Promise<void> {
     try {
       const current = await this.getPreferences();
-      const updated = { ...current, ...preferences };
+      const updated = {
+        ...current,
+        ...preferences,
+        userModified: true, // Mark as user-modified to preserve changes
+      };
       await AsyncStorage.setItem(PREFERENCES_KEY, JSON.stringify(updated));
       console.log('Preferences updated:', updated);
     } catch (error) {

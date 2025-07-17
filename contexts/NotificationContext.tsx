@@ -36,7 +36,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const router = useRouter();
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     enabled: true,
-    notificationTime: '17:54',
+    notificationTime: '9:00',
     daysBeforeExpiry: 3,
   });
   const [hasPermissions, setHasPermissions] = useState(false);
@@ -103,27 +103,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
   const getPreferencesFromManager =
     async (): Promise<NotificationPreferences> => {
-      // Access the private method through a public interface
-      try {
-        const { status } = await Notifications.getPermissionsAsync();
-        const enabled = status === 'granted';
-
-        // For now, return defaults
-        return {
-          enabled,
-          notificationTime: '17:54',
-          daysBeforeExpiry: 3,
-        };
-      } catch (error) {
-        console.error('Error getting preferences:', error);
-        return {
-          enabled: true,
-          notificationTime: '17:55',
-          daysBeforeExpiry: 3,
-        };
-      }
+      return await notificationManager.getPreferences();
     };
-
   const requestPermissions = async (): Promise<boolean> => {
     try {
       const granted = await notificationManager.requestPermissions();
