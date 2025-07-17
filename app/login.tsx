@@ -2,35 +2,48 @@ import AuthButton from '@/components/auth/AuthButton';
 import AuthHeader from '@/components/auth/AuthHeader';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthLayout from '@/components/auth/AuthLayout';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const { signIn, isLoading } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async () => {
-    if (!username || !password) {
+  const handleSignIn = async () => {
+    if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
     try {
-      console.log('Login attempt:', { username, password });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      router.replace('/(tabs)/home');
+      const result = await signIn(email, password);
+
+      if (result.success) {
+        router.replace('/(tabs)/home');
+      } else {
+        Alert.alert('Sign In Failed', result.message);
+      }
     } catch (error) {
-      Alert.alert('Login Failed', 'Invalid credentials');
+      Alert.alert(
+        'Sign In Failed',
+        'An unexpected error occurred. Please try again.'
+      );
     }
   };
 
   const handleForgotPassword = () => {
-    Alert.alert(
-      'Forgot Password',
-      'Password reset functionality would go here'
-    );
+    Alert.alert('Forgot Password', 'Password reset functionality coming soon!');
   };
 
   const navigateToRegister = () => {
@@ -40,34 +53,47 @@ export default function LoginScreen() {
   return (
     <AuthLayout>
       <View className='flex-1 justify-center'>
-        <AuthHeader title='Welcome back, Cat!' />
+        <AuthHeader title='Welcome back!' />
 
         <View className='gap-4 mb-6'>
           <AuthInput
-            placeholder='Username'
-            value={username}
-            onChangeText={setUsername}
+            placeholder='Email'
+            value={email}
+            onChangeText={setEmail}
+            keyboardType='email-address'
             autoCapitalize='none'
+            autoComplete='email'
+            editable={!isLoading}
           />
           <AuthInput
             placeholder='Password'
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoComplete='password'
+            editable={!isLoading}
           />
         </View>
 
-        <AuthButton title='Sign In' onPress={handleLogin} />
+        <AuthButton
+          title={isLoading ? 'Signing In...' : 'Sign In'}
+          onPress={handleSignIn}
+          disabled={isLoading}
+        />
 
-        <TouchableOpacity onPress={handleForgotPassword} className='mb-8'>
+        <TouchableOpacity
+          onPress={handleForgotPassword}
+          className='mb-8'
+          disabled={isLoading}
+        >
           <Text className='text-blue-600 text-center font-medium'>
             Forgot Password
           </Text>
         </TouchableOpacity>
 
         <View className='flex-row justify-center'>
-          <Text className='text-gray-600'>Don&apos;t have an account? </Text>
-          <TouchableOpacity onPress={navigateToRegister}>
+          <Text className='text-gray-600'>Don&#39;t have an account? </Text>
+          <TouchableOpacity onPress={navigateToRegister} disabled={isLoading}>
             <Text className='text-blue-600 font-bold'>Sign Up</Text>
           </TouchableOpacity>
         </View>
