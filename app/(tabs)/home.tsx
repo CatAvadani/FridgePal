@@ -1,5 +1,6 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
+import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { ProductDisplay } from '@/types/interfaces';
@@ -21,12 +22,14 @@ import {
 } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  const userName = 'Cat';
+  const { user } = useAuth();
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProducts();
   const { showAlert } = useAlert();
   const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const userName = user?.firstName || user?.email?.split('@')[0] || 'User';
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -104,7 +107,7 @@ export default function HomeScreen() {
         }
       >
         <View className='px-5 py-6'>
-          <Text className='text-3xl font-bold text-gray-800 dark:text-white'>
+          <Text className='text-3xl font-bold text-gray-800 dark:text-white capitalize'>
             Welcome, {userName}!
           </Text>
           <Text className='text-base text-gray-600 mt-1 dark:text-gray-300'>
