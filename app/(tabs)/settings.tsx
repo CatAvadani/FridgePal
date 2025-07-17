@@ -1,7 +1,9 @@
 import SettingsItem from '@/components/SettingsItem';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/hooks/useCustomAlert';
+import { notificationManager } from '@/services/notificationManager';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -52,6 +54,60 @@ export default function SettingsScreen() {
     });
   };
 
+  //  test functions
+  const debugNotifications = async () => {
+    console.log('=== NOTIFICATION DEBUG ===');
+
+    // Check current preferences
+    try {
+      const prefs = await notificationManager.getPreferences();
+      console.log('Current preferences:', prefs);
+    } catch (error) {
+      console.log('Error getting preferences:', error);
+    }
+
+    // Check permissions
+    const permissions = await Notifications.getPermissionsAsync();
+    console.log('Permissions:', permissions.status);
+
+    // Check scheduled notifications
+    const scheduled = await notificationManager.getScheduledNotifications();
+    console.log('Scheduled count:', scheduled.length);
+
+    scheduled.forEach((notification, index) => {
+      console.log(
+        `${index + 1}. ${notification.content.title} - ${notification.content.body}`
+      );
+    });
+
+    console.log('========================');
+  };
+
+  const testImmediateNotification = async () => {
+    const testDate = new Date();
+    testDate.setSeconds(testDate.getSeconds() + 10);
+
+    console.log(
+      'Scheduling test notification for:',
+      testDate.toLocaleTimeString()
+    );
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'FridgePal Test',
+        body: 'Test notification working!',
+      },
+      trigger: {
+        type: 'date',
+        date: testDate,
+      } as Notifications.DateTriggerInput,
+    });
+
+    console.log(
+      'Test notification scheduled - background the app and wait 10 seconds'
+    );
+  };
+
   const SectionHeader = ({ title }: { title: string }) => (
     <Text className='text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-6 py-3 bg-gray-50 dark:bg-gray-900'>
       {title}
@@ -85,7 +141,7 @@ export default function SettingsScreen() {
         {/* User Info Section */}
         {user && (
           <>
-            <SectionHeader title='Account' />
+            <SectionHeader title='Profile' />
             <SettingsItem
               title={`${user.firstName || 'User'} ${user.lastName || ''}`}
               subtitle={user.email}
@@ -95,16 +151,6 @@ export default function SettingsScreen() {
             />
           </>
         )}
-
-        {/* Profile Section */}
-        <SectionHeader title='Profile' />
-        <SettingsItem
-          title='Edit Profile'
-          subtitle='Update your personal information'
-          onPress={() =>
-            Alert.alert('Edit Profile', 'Profile editing would go here')
-          }
-        />
 
         <SectionHeader title='Preferences' />
         <SettingsItem
@@ -145,6 +191,28 @@ export default function SettingsScreen() {
         />
 
         <View className='h-6' />
+        {/*  test buttons - temporarily */}
+        <View className='px-4 py-4 bg-yellow-100 m-4 rounded-lg'>
+          <Text className='text-lg font-bold mb-4'>Notification Testing</Text>
+
+          <TouchableOpacity
+            onPress={debugNotifications}
+            className='bg-blue-500 p-3 rounded-lg mb-2'
+          >
+            <Text className='text-white text-center font-semibold'>
+              Debug Notifications
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={testImmediateNotification}
+            className='bg-green-500 p-3 rounded-lg'
+          >
+            <Text className='text-white text-center font-semibold'>
+              Test Immediate (10 sec)
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,3 +1,4 @@
+import { notificationManager } from '@/services/notificationManager';
 import {
   createProduct,
   deleteProduct as deleteProductApi,
@@ -43,7 +44,6 @@ export default function ProductProvider({ children }: PropsWithChildren) {
   const { user, isLoading } = useAuth();
 
   const fetchProducts = useCallback(async () => {
-    // If user is not authenticated, skip fetching products
     if (!user) {
       console.log('No user authenticated, skipping product fetch');
       setProducts([]);
@@ -60,21 +60,33 @@ export default function ProductProvider({ children }: PropsWithChildren) {
       console.error('[ProductContext] fetchProducts error:', error);
       setError('Failed to fetch products. Please try again.');
       setProducts([]);
-    } finally {
       setLoading(false);
     }
   }, [user]);
 
   const addProduct = useCallback(
     async (productData: CreateProductRequest, imageUri?: string | null) => {
-      // If user is not authenticated, skip adding product
       if (!user) {
         throw new Error('User not authenticated');
       }
+
       try {
         setLoading(true);
         setError(null);
-        await createProduct(productData, imageUri);
+
+        const newProduct = await createProduct(productData, imageUri);
+
+        // Schedule notification for the new product
+        try {
+          console.log(
+            'Scheduling notification for new product:',
+            newProduct.productName
+          );
+          await notificationManager.scheduleProductNotification(newProduct);
+        } catch (notificationError) {
+          console.warn('Failed to schedule notification:', notificationError);
+        }
+
         await fetchProducts();
       } catch (error) {
         console.error('[ProductContext] addProduct error:', error);
@@ -86,6 +98,7 @@ export default function ProductProvider({ children }: PropsWithChildren) {
     },
     [fetchProducts, user]
   );
+
   const updateProduct = useCallback(
     async (itemId: string, updatedData: Partial<CreateProductRequest>) => {
       if (!user) {
@@ -95,7 +108,27 @@ export default function ProductProvider({ children }: PropsWithChildren) {
       try {
         setLoading(true);
         setError(null);
-        await updateProductApi(itemId, updatedData);
+
+        const updatedProduct = await updateProductApi(itemId, updatedData);
+
+        // Cancel old notifications and schedule new ones if expiration date changed
+        if (updatedData.expirationDate) {
+          try {
+            console.log(
+              'Rescheduling notification for updated product:',
+              updatedProduct.productName
+            );
+            await notificationManager.cancelProductNotifications(itemId);
+            await notificationManager.scheduleProductNotification(
+              updatedProduct
+            );
+          } catch (notificationError) {
+            console.warn(
+              'Failed to reschedule notification:',
+              notificationError
+            );
+          }
+        }
 
         const refreshedProducts = await getProducts();
         setProducts(refreshedProducts);
@@ -119,8 +152,16 @@ export default function ProductProvider({ children }: PropsWithChildren) {
       try {
         setLoading(true);
         setError(null);
-        await deleteProductApi(itemId);
 
+        // Cancel notifications for the product being deleted
+        try {
+          console.log('Cancelling notifications for deleted product:', itemId);
+          await notificationManager.cancelProductNotifications(itemId);
+        } catch (notificationError) {
+          console.warn('Failed to cancel notifications:', notificationError);
+        }
+
+        await deleteProductApi(itemId);
         setProducts((prev) =>
           prev.filter((product) => product.itemId !== itemId)
         );

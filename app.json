@@ -32,6 +32,13 @@
           "recordAudioAndroid": false
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "sounds": [],
+          "color": "#4F46E5"
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",

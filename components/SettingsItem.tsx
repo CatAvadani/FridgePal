@@ -61,7 +61,7 @@ export default function SettingsItem({
         <Switch
           value={toggleValue}
           onValueChange={onToggle}
-          trackColor={{ false: '#767577', true: '#FF6B47' }}
+          trackColor={{ false: '#767577', true: '#ff5733' }}
           thumbColor={toggleValue ? '#f4f3f4' : '#f4f3f4'}
         />
       ) : showArrow ? (
