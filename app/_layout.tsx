@@ -1,4 +1,5 @@
 import AuthProvider from '@/contexts/AuthContext';
+import NotificationProvider from '@/contexts/NotificationContext';
 import ProductProvider from '@/contexts/ProductContext';
 import { AlertProvider } from '@/hooks/useCustomAlert';
 import 'core-js/actual/structured-clone';
@@ -26,56 +27,61 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView>
       <AuthProvider>
-        <PaperProvider>
-          <AlertProvider>
-            <ProductProvider>
-              <ExpiryColorPresets />
+        <NotificationProvider>
+          <PaperProvider>
+            <AlertProvider>
+              <ProductProvider>
+                <ExpiryColorPresets />
 
-              <Stack>
-                <Stack.Screen
-                  name='index'
-                  options={{ headerShown: false, title: 'Welcome' }}
-                />
+                <Stack>
+                  <Stack.Screen
+                    name='index'
+                    options={{ headerShown: false, title: 'Welcome' }}
+                  />
 
-                <Stack.Screen name='login' options={{ headerShown: false }} />
-                <Stack.Screen
-                  name='register'
-                  options={{ headerShown: false }}
-                />
+                  <Stack.Screen name='login' options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name='register'
+                    options={{ headerShown: false }}
+                  />
 
-                <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-                <Stack.Screen
-                  name='addProduct'
-                  options={{
-                    title: 'Add Product',
-                    headerTitleAlign: 'center',
-                    headerBackTitle: '',
-                    headerShown: false,
-                    headerTintColor: 'black',
-                  }}
-                />
-                <Stack.Screen
-                  name='editProduct'
-                  options={{
-                    title: 'Edit Product',
-                    headerTitleAlign: 'center',
-                    headerBackTitle: '',
-                    headerShown: false,
-                    headerTintColor: 'black',
-                  }}
-                />
-                <Stack.Screen
-                  name='cameraScreen'
-                  options={{
-                    headerShown: false,
-                  }}
-                />
-                <Stack.Screen name='+not-found' />
-              </Stack>
-              <StatusBar style='auto' />
-            </ProductProvider>
-          </AlertProvider>
-        </PaperProvider>
+                  <Stack.Screen
+                    name='(tabs)'
+                    options={{ headerShown: false }}
+                  />
+                  <Stack.Screen
+                    name='addProduct'
+                    options={{
+                      title: 'Add Product',
+                      headerTitleAlign: 'center',
+                      headerBackTitle: '',
+                      headerShown: false,
+                      headerTintColor: 'black',
+                    }}
+                  />
+                  <Stack.Screen
+                    name='editProduct'
+                    options={{
+                      title: 'Edit Product',
+                      headerTitleAlign: 'center',
+                      headerBackTitle: '',
+                      headerShown: false,
+                      headerTintColor: 'black',
+                    }}
+                  />
+                  <Stack.Screen
+                    name='cameraScreen'
+                    options={{
+                      headerShown: false,
+                    }}
+                  />
+                  <Stack.Screen name='+not-found' />
+                </Stack>
+                <StatusBar style='auto' />
+              </ProductProvider>
+            </AlertProvider>
+          </PaperProvider>
+        </NotificationProvider>
       </AuthProvider>
     </GestureHandlerRootView>
   );
