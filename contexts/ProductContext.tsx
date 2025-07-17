@@ -14,6 +14,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useAuth } from './AuthContext';
 
 interface ProductContextValue {
   products: ProductDisplay[];
@@ -39,23 +40,37 @@ export default function ProductProvider({ children }: PropsWithChildren) {
   const [products, setProducts] = useState<ProductDisplay[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user, isLoading } = useAuth();
 
   const fetchProducts = useCallback(async () => {
+    // If user is not authenticated, skip fetching products
+    if (!user) {
+      console.log('No user authenticated, skipping product fetch');
+      setProducts([]);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching products for authenticated user:', user.email);
       const data = await getProducts();
       setProducts(data);
     } catch (error) {
       console.error('[ProductContext] fetchProducts error:', error);
       setError('Failed to fetch products. Please try again.');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const addProduct = useCallback(
     async (productData: CreateProductRequest, imageUri?: string | null) => {
+      // If user is not authenticated, skip adding product
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
       try {
         setLoading(true);
         setError(null);
@@ -69,11 +84,14 @@ export default function ProductProvider({ children }: PropsWithChildren) {
         setLoading(false);
       }
     },
-    [fetchProducts]
+    [fetchProducts, user]
   );
-
   const updateProduct = useCallback(
     async (itemId: string, updatedData: Partial<CreateProductRequest>) => {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       try {
         setLoading(true);
         setError(null);
@@ -89,30 +107,48 @@ export default function ProductProvider({ children }: PropsWithChildren) {
         setLoading(false);
       }
     },
-    []
+    [user]
   );
 
-  const deleteProduct = useCallback(async (itemId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await deleteProductApi(itemId);
+  const deleteProduct = useCallback(
+    async (itemId: string) => {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
 
-      setProducts((prev) =>
-        prev.filter((product) => product.itemId !== itemId)
-      );
-    } catch (error) {
-      console.error('[ProductContext] deleteProduct error:', error);
-      setError('Failed to delete product. Please try again.');
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      try {
+        setLoading(true);
+        setError(null);
+        await deleteProductApi(itemId);
+
+        setProducts((prev) =>
+          prev.filter((product) => product.itemId !== itemId)
+        );
+      } catch (error) {
+        console.error('[ProductContext] deleteProduct error:', error);
+        setError('Failed to delete product. Please try again.');
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user]
+  );
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    if (isLoading) {
+      return;
+    }
+
+    if (user) {
+      console.log('User authenticated, fetching products');
+      fetchProducts();
+    } else {
+      console.log('User not authenticated, clearing products');
+      setProducts([]);
+      setError(null);
+    }
+  }, [user, isLoading, fetchProducts]);
 
   const contextValue = useMemo(
     () => ({

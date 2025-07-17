@@ -24,7 +24,7 @@ export const getProducts = async (): Promise<ProductDisplay[]> => {
       throw new Error('User not authenticated');
     }
 
-    console.log('👤 Fetching products for user:', user.email);
+    console.log(' Fetching products for user:', user.email);
 
     const { data, error } = await supabase
       .from('products')
