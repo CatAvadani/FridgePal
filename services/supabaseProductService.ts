@@ -13,6 +13,19 @@ const PRODUCT_IMAGES_BUCKET = 'product-images';
 
 export const getProducts = async (): Promise<ProductDisplay[]> => {
   try {
+    // Get current user first
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      throw new Error('User not authenticated');
+    }
+
+    console.log('👤 Fetching products for user:', user.email);
+
     const { data, error } = await supabase
       .from('products')
       .select(
@@ -24,15 +37,18 @@ export const getProducts = async (): Promise<ProductDisplay[]> => {
         )
       `
       )
+      .eq('user_id', user.id) // Only get products for this user
       .order('created_at', { ascending: false });
 
     if (error) throw error;
     if (!data) return [];
 
+    console.log(`Found ${data.length} products for user`);
+
     const products: Product[] = data.map(mapSupabaseProductToProduct);
     return products.map(convertToProductDisplay);
   } catch (error) {
-    console.error('💥 Error fetching products:', error);
+    console.error('Error fetching products:', error);
     throw error;
   }
 };
@@ -42,6 +58,19 @@ export const createProduct = async (
   imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
+    // Get current user first
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      throw new Error('User not authenticated');
+    }
+
+    console.log('Creating product for user:', user.email);
+
     let imageUrl = null;
     if (imageUri) {
       imageUrl = await uploadImage(imageUri);
@@ -50,6 +79,7 @@ export const createProduct = async (
     const { data, error } = await supabase
       .from('products')
       .insert({
+        user_id: user.id,
         product_name: productData.productName,
         quantity: productData.quantity,
         expiration_date: productData.expirationDate,
@@ -84,6 +114,19 @@ export const updateProduct = async (
   imageUri?: string | null
 ): Promise<ProductDisplay> => {
   try {
+    // Get current user first
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error(' User not authenticated:', userError);
+      throw new Error('User not authenticated');
+    }
+
+    console.log('Updating product for user:', user.email);
+
     let imageUrl = undefined;
     if (imageUri) {
       imageUrl = await uploadImage(imageUri);
@@ -106,6 +149,7 @@ export const updateProduct = async (
       .from('products')
       .update(updateData)
       .eq('id', itemId)
+      .eq('user_id', user.id)
       .select(
         `
         *,
@@ -130,38 +174,62 @@ export const updateProduct = async (
 
 export const deleteProduct = async (itemId: string): Promise<void> => {
   try {
+    // Get current user first
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      throw new Error('User not authenticated');
+    }
+
+    console.log(' Deleting product for user:', user.email);
+
+    // First, get the product to find the image URL (and verify ownership)
     const { data: product, error: fetchError } = await supabase
       .from('products')
       .select('image_url')
       .eq('id', itemId)
+      .eq('user_id', user.id) // Ensure user can only delete their own products
       .single();
 
     if (fetchError)
       console.error('Error fetching product for deletion:', fetchError);
 
+    // Delete image from storage if it exists
     if (product?.image_url) {
       try {
         const imageUrl = product.image_url;
         const filePath = imageUrl.split(`/${PRODUCT_IMAGES_BUCKET}/`)[1];
 
         if (filePath) {
+          console.log('Deleting image:', filePath);
           const { error: storageError } = await supabase.storage
             .from(PRODUCT_IMAGES_BUCKET)
             .remove([filePath]);
-          if (storageError)
+          if (storageError) {
             console.warn('Storage deletion failed:', storageError);
+          } else {
+            console.log('Image deleted from storage');
+          }
         }
       } catch (imageError) {
         console.warn('Error during image deletion:', imageError);
       }
     }
 
+    // Delete the product from database
     const { error: deleteError } = await supabase
       .from('products')
       .delete()
-      .eq('id', itemId);
+      .eq('id', itemId)
+      .eq('user_id', user.id); // Ensure user can only delete their own products
 
     if (deleteError) throw deleteError;
+
+    console.log('Product deleted from database');
   } catch (error) {
     console.error('Error deleting product:', error);
     throw error;
@@ -170,8 +238,14 @@ export const deleteProduct = async (itemId: string): Promise<void> => {
 
 const uploadImage = async (imageUri: string): Promise<string> => {
   try {
+    // Get current user for unique file naming
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     const formData = new FormData();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+    // Include user ID in filename to avoid conflicts
+    const fileName = `${user?.id || 'anon'}-${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
     formData.append('file', {
       uri: imageUri,
       type: 'image/jpeg',
