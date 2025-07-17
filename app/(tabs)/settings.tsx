@@ -1,4 +1,5 @@
 import SettingsItem from '@/components/SettingsItem';
+import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -17,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SettingsScreen() {
   const router = useRouter();
   const { showAlert } = useAlert();
+  const { user, logout } = useAuth();
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
 
@@ -34,9 +36,16 @@ export default function SettingsScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => {
-            //Todo: Add logout logic here
-            router.replace('/login');
+          onPress: async () => {
+            try {
+              console.log('Starting logout process...');
+              await logout();
+              console.log('Logout successful, navigating to login');
+              router.replace('/login');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Logout Failed', 'Please try again.');
+            }
           },
         },
       ],
@@ -72,6 +81,20 @@ export default function SettingsScreen() {
             <View className='w-10' />
           </View>
         </View>
+
+        {/* User Info Section */}
+        {user && (
+          <>
+            <SectionHeader title='Account' />
+            <SettingsItem
+              title={`${user.firstName || 'User'} ${user.lastName || ''}`}
+              subtitle={user.email}
+              onPress={() =>
+                Alert.alert('Profile', 'Profile editing would go here')
+              }
+            />
+          </>
+        )}
 
         {/* Profile Section */}
         <SectionHeader title='Profile' />
@@ -113,7 +136,7 @@ export default function SettingsScreen() {
           }
         />
 
-        <SectionHeader title='Account' />
+        <SectionHeader title='Sign Out' />
         <SettingsItem
           title='Logout'
           subtitle='Sign out of your account'

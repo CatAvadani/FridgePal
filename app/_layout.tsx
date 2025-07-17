@@ -1,5 +1,7 @@
+import AuthProvider from '@/contexts/AuthContext';
 import ProductProvider from '@/contexts/ProductContext';
 import { AlertProvider } from '@/hooks/useCustomAlert';
+import 'core-js/actual/structured-clone';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Text, View } from 'react-native';
@@ -23,53 +25,58 @@ const ExpiryColorPresets = () => (
 export default function RootLayout() {
   return (
     <GestureHandlerRootView>
-      <PaperProvider>
-        <AlertProvider>
-          <ProductProvider>
-            <ExpiryColorPresets />
+      <AuthProvider>
+        <PaperProvider>
+          <AlertProvider>
+            <ProductProvider>
+              <ExpiryColorPresets />
 
-            <Stack>
-              <Stack.Screen
-                name='index'
-                options={{ headerShown: false, title: 'Welcome' }}
-              />
+              <Stack>
+                <Stack.Screen
+                  name='index'
+                  options={{ headerShown: false, title: 'Welcome' }}
+                />
 
-              <Stack.Screen name='login' options={{ headerShown: false }} />
-              <Stack.Screen name='register' options={{ headerShown: false }} />
+                <Stack.Screen name='login' options={{ headerShown: false }} />
+                <Stack.Screen
+                  name='register'
+                  options={{ headerShown: false }}
+                />
 
-              <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-              <Stack.Screen
-                name='addProduct'
-                options={{
-                  title: 'Add Product',
-                  headerTitleAlign: 'center',
-                  headerBackTitle: '',
-                  headerShown: false,
-                  headerTintColor: 'black',
-                }}
-              />
-              <Stack.Screen
-                name='editProduct'
-                options={{
-                  title: 'Edit Product',
-                  headerTitleAlign: 'center',
-                  headerBackTitle: '',
-                  headerShown: false,
-                  headerTintColor: 'black',
-                }}
-              />
-              <Stack.Screen
-                name='cameraScreen'
-                options={{
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen name='+not-found' />
-            </Stack>
-            <StatusBar style='auto' />
-          </ProductProvider>
-        </AlertProvider>
-      </PaperProvider>
+                <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+                <Stack.Screen
+                  name='addProduct'
+                  options={{
+                    title: 'Add Product',
+                    headerTitleAlign: 'center',
+                    headerBackTitle: '',
+                    headerShown: false,
+                    headerTintColor: 'black',
+                  }}
+                />
+                <Stack.Screen
+                  name='editProduct'
+                  options={{
+                    title: 'Edit Product',
+                    headerTitleAlign: 'center',
+                    headerBackTitle: '',
+                    headerShown: false,
+                    headerTintColor: 'black',
+                  }}
+                />
+                <Stack.Screen
+                  name='cameraScreen'
+                  options={{
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen name='+not-found' />
+              </Stack>
+              <StatusBar style='auto' />
+            </ProductProvider>
+          </AlertProvider>
+        </PaperProvider>
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 }

@@ -1,11 +1,16 @@
-export interface User {
-  userId: string;
-  email: string;
-  password: string;
-  phoneNumber?: string;
-  creationDate: string;
+export interface AuthResult {
+  success: boolean;
+  message: string;
+  error?: string;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  created_at: string;
+}
 export interface Category {
   categoryId: number;
   categoryName: string;
