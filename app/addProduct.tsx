@@ -273,7 +273,7 @@ export default function AddProductScreen() {
           <View className='flex-row gap-4 mt-6'>
             <TouchableOpacity
               className='flex-1 button-secondary border border-primary dark:bg-transparent p-4 rounded-lg'
-              onPress={() => router.replace('/')}
+              onPress={() => router.replace('/(tabs)/home')}
               disabled={saving}
             >
               <Text className='text-center text-primary font-semibold'>
