@@ -11,10 +11,11 @@ Your smart kitchen companion that helps you reduce food waste and save money! Fr
 ## Key Features
 
 - **Smart Scanning**: Use your phone's camera to instantly identify food items
-- **AI-Assisted Entry**: Take a photo and let FridgePal auto-fill product info for you (edit as needed!)
+- **AI-Assisted Entry**: Take a photo and let FridgePal auto-fill product info for you
+- **User Authentication**: Secure login and registration with personal data isolation
 - **Expiry Tracking**: Automatic expiration date detection and reminders
 - **Inventory Management**: Keep a real-time overview of everything in your fridge
-- **Image Storage**: Upload and store product photos
+- **Image Storage**: Upload and store product photos securely
 - **Smart Notifications**: Get alerts before items expire _(feature coming soon!)_
 
 Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll always know what you have, when it expires, and how to use it before it goes bad!
@@ -27,6 +28,7 @@ Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll
 - **NativeWind** – Tailwind CSS for React Native
 - **TypeScript** – Type safety
 - **Supabase** – Backend database, auth & storage
+- **Supabase Auth** – User authentication and session management
 - **OpenAI Vision API** – AI-powered food recognition
 - **PostgreSQL** – Database (via Supabase)
 
@@ -36,7 +38,7 @@ This is a full-stack mobile application featuring:
 - **Frontend**: React Native with Expo for cross-platform mobile development
 - **Backend**: Supabase for database, authentication, and file storage
 - **AI Integration**: OpenAI Vision API for intelligent food recognition
-- **Real-time Data**: Automatic synchronization across devices
+- **Security**: User authentication with data isolation and session persistence
 
 ## Environment Variables
 
@@ -50,10 +52,12 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 
 ## Database Schema
 
-The app uses PostgreSQL via Supabase with the following main tables:
-- **products** - Food items with expiration tracking
+The app uses PostgreSQL via Supabase with user authentication and data isolation:
+- **products** - Food items with expiration tracking (user-specific)
 - **categories** - Food categories (fruits, vegetables, etc.)
-- **Storage bucket** - Product images
+- **Storage bucket** - Product images with secure access
+
+
 
 ## CI/CD Pipeline
 
@@ -94,11 +98,11 @@ npm install
 
 1. Create a Supabase project at [supabase.com](https://supabase.com)
 2. Get an OpenAI API key at [platform.openai.com](https://platform.openai.com)
-3. Copy `.env.example` to `.env` and fill in your credentials
+3. Create a `.env` file and add your credentials
 
 ### 3. Set Up Database
 
-Run the SQL schema in your Supabase SQL editor (see `/docs/schema.sql`)
+Run the SQL schema in your Supabase SQL editor for products and categories
 
 ### 4. Start the Development Server
 
@@ -147,11 +151,12 @@ npx expo start
 - Edit product details
 - Delete expired items
 - Visual expiry tracking
+- User-specific data isolation
 
 ### Data Storage
 - Real-time synchronization
-- Image storage in Supabase
-- Secure user authentication
+- Secure image storage
+- User authentication and session management
 - Data persistence across sessions
 
 ## Development Commands
@@ -187,4 +192,6 @@ npm audit
 ## Author
 
 **Catalina Avadani** - [GitHub](https://github.com/CatAvadani) | [LinkedIn](https://www.linkedin.com/in/catalinaava09/)
+
+
 
