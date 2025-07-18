@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
+  Linking,
   Platform,
   ScrollView,
   Text,
@@ -102,7 +103,7 @@ export default function SettingsScreen() {
   }`;
 
   return (
-    <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
+    <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900 pb-28'>
       <ScrollView className='flex-1'>
         {/* Header */}
         <View className='bg-transparent dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4'>
@@ -182,6 +183,14 @@ export default function SettingsScreen() {
           showArrow={false}
         />
         <View className='h-6' />
+
+        <SettingsItem
+          title='Privacy Policy'
+          subtitle='How we handle your data'
+          onPress={() =>
+            Linking.openURL('https://catavadani.github.io/fridgepal-privacy/')
+          }
+        />
 
         <TimePicker
           visible={showTimePicker}
