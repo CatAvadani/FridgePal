@@ -1,4 +1,5 @@
 import SettingsItem from '@/components/SettingsItem';
+import TimePicker from '@/components/TimePicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { notificationManager } from '@/services/notificationManager';
@@ -26,6 +27,8 @@ export default function SettingsScreen() {
 
   // Settings states
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationTime, setNotificationTime] = useState('09:00');
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
   // Load current notification preferences on mount
@@ -37,6 +40,7 @@ export default function SettingsScreen() {
     try {
       const prefs = await notificationManager.getPreferences();
       setNotificationsEnabled(prefs.enabled);
+      setNotificationTime(prefs.notificationTime);
     } catch (error) {
       console.error('Error loading notification preferences:', error);
     }
@@ -66,6 +70,15 @@ export default function SettingsScreen() {
         },
       ],
     });
+  };
+
+  // Format time for display (convert 24h to 12h format)
+  const formatDisplayTime = (timeString: string) => {
+    const [hours, minutes] = timeString.split(':');
+    const hour24 = parseInt(hours);
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
   };
 
   // Fixed notification toggle handler
@@ -183,7 +196,6 @@ export default function SettingsScreen() {
             <View className='w-10' />
           </View>
         </View>
-
         {/* User Info Section */}
         {user && (
           <>
@@ -197,7 +209,6 @@ export default function SettingsScreen() {
             />
           </>
         )}
-
         <SectionHeader title='Preferences' />
         <SettingsItem
           title='Notifications'
@@ -206,6 +217,19 @@ export default function SettingsScreen() {
           toggleValue={notificationsEnabled}
           onToggle={handleNotificationToggle}
         />
+        {notificationsEnabled && (
+          <SettingsItem
+            title='Notification Time'
+            subtitle={`Daily alerts at ${formatDisplayTime(notificationTime)}`}
+            onPress={() => {
+              console.log('Notification time tapped!');
+              console.log('Current platform:', Platform.OS);
+              console.log('Show time picker state:', showTimePicker);
+              setShowTimePicker(true);
+              console.log('Set showTimePicker to true');
+            }}
+          />
+        )}
         <SettingsItem
           title='Dark Mode'
           subtitle='Switch between light and dark themes'
@@ -213,7 +237,6 @@ export default function SettingsScreen() {
           toggleValue={darkMode}
           onToggle={setDarkMode}
         />
-
         <SectionHeader title='Support' />
         <SettingsItem
           title='Help & Support'
@@ -227,7 +250,6 @@ export default function SettingsScreen() {
             Alert.alert('About', 'App info and terms would go here')
           }
         />
-
         <SectionHeader title='Sign Out' />
         <SettingsItem
           title='Logout'
@@ -235,8 +257,33 @@ export default function SettingsScreen() {
           onPress={handleLogout}
           showArrow={false}
         />
-
         <View className='h-6' />
+
+        <TimePicker
+          visible={showTimePicker}
+          initialTime={notificationTime}
+          onTimeSelect={async (selectedTime) => {
+            setNotificationTime(selectedTime);
+            setShowTimePicker(false);
+
+            try {
+              await notificationManager.updatePreferences({
+                notificationTime: selectedTime,
+              });
+
+              showAlert({
+                title: 'Time Updated',
+                message: `Notification time changed to ${formatDisplayTime(selectedTime)}`,
+                icon: 'check-circle',
+                buttons: [{ text: 'OK', style: 'default' }],
+              });
+            } catch (error) {
+              console.error('Error updating notification time:', error);
+            }
+          }}
+          onCancel={() => setShowTimePicker(false)}
+          isDarkMode={isDarkMode}
+        />
 
         {/* Development Testing Section */}
         {__DEV__ && (
