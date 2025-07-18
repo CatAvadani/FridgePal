@@ -11,6 +11,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { useAuth } from './AuthContext';
 
 interface NotificationContextType {
@@ -47,11 +48,36 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     if (user) {
       initializeNotifications();
     } else {
-      // Clear notifications when user logs out
-      notificationManager.clearAllNotifications();
+      // Don't clear notifications on auth glitches - only on intentional logout
+      console.log(
+        'Auth state changed - user is null, keeping notifications for now'
+      );
       setHasPermissions(false);
     }
   }, [user]);
+
+  // App state listener for permission detection
+  useEffect(() => {
+    // In your NotificationContext.tsx, update the app state handler:
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      console.log('=== APP STATE CHANGE ===');
+      console.log('App state changed to:', nextAppState);
+
+      if (nextAppState === 'active') {
+        console.log('App became active - checking permissions...');
+        recheckPermissions();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
 
   // Set up notification listeners
   useEffect(() => {
@@ -98,6 +124,32 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       console.error('Error initializing notifications:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const recheckPermissions = async () => {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      const granted = status === 'granted';
+
+      // Only update if permission status changed
+      if (granted !== hasPermissions) {
+        console.log('Permission status changed:', {
+          from: hasPermissions,
+          to: granted,
+        });
+        setHasPermissions(granted);
+
+        // Update preferences if permissions were granted
+        if (granted) {
+          await notificationManager.updatePreferences({ enabled: true });
+          const updatedPrefs = await getPreferencesFromManager();
+          setPreferences(updatedPrefs);
+          console.log('Permissions granted - updated preferences');
+        }
+      }
+    } catch (error) {
+      console.error('Error rechecking permissions:', error);
     }
   };
 
