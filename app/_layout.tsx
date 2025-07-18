@@ -1,7 +1,9 @@
+import NotificationPermissionScreen from '@/components/NotificationPermissionScreen';
 import AuthProvider from '@/contexts/AuthContext';
 import NotificationProvider from '@/contexts/NotificationContext';
 import ProductProvider from '@/contexts/ProductContext';
 import { AlertProvider } from '@/hooks/useCustomAlert';
+import { useNotificationPermission } from '@/hooks/useNotificationPermission';
 import 'core-js/actual/structured-clone';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -24,6 +26,14 @@ const ExpiryColorPresets = () => (
 );
 
 export default function RootLayout() {
+  const {
+    showPermissionScreen,
+    permissionDenied,
+    requestPermission,
+    openSettings,
+    skipPermission,
+  } = useNotificationPermission();
+
   return (
     <GestureHandlerRootView>
       <AuthProvider>
@@ -82,6 +92,13 @@ export default function RootLayout() {
             </AlertProvider>
           </PaperProvider>
         </NotificationProvider>
+        <NotificationPermissionScreen
+          visible={showPermissionScreen}
+          permissionDenied={permissionDenied}
+          onRequestPermission={requestPermission}
+          onOpenSettings={openSettings}
+          onSkip={skipPermission}
+        />
       </AuthProvider>
     </GestureHandlerRootView>
   );
