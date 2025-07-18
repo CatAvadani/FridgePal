@@ -2,7 +2,7 @@ import { notificationManager } from '@/services/notificationManager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
-import { Linking, Platform } from 'react-native';
+import { AppState, AppStateStatus, Linking, Platform } from 'react-native';
 
 interface NotificationPermissionState {
   showPermissionScreen: boolean;
@@ -22,6 +22,25 @@ export const useNotificationPermission = () => {
 
   useEffect(() => {
     checkPermissionStatus();
+  }, []);
+
+  // App state listener for permission changes
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        // App became active - recheck permissions
+        recheckPermission();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      'change',
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription?.remove();
+    };
   }, []);
 
   const checkPermissionStatus = async () => {
@@ -113,15 +132,20 @@ export const useNotificationPermission = () => {
 
   // Check if permission was granted in settings (when app becomes active)
   const recheckPermission = async () => {
-    const { status } = await Notifications.getPermissionsAsync();
-    if (status === 'granted') {
-      await AsyncStorage.removeItem(PERMISSION_DENIED_KEY);
-      setState((prev) => ({
-        ...prev,
-        showPermissionScreen: false,
-        permissionDenied: false,
-      }));
-      await notificationManager.updatePreferences({ enabled: true });
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === 'granted') {
+        console.log('Permissions detected as granted - updating state');
+        await AsyncStorage.removeItem(PERMISSION_DENIED_KEY);
+        setState((prev) => ({
+          ...prev,
+          showPermissionScreen: false,
+          permissionDenied: false,
+        }));
+        await notificationManager.updatePreferences({ enabled: true });
+      }
+    } catch (error) {
+      console.error('Error rechecking permissions:', error);
     }
   };
 
