@@ -16,7 +16,7 @@ Your smart kitchen companion that helps you reduce food waste and save money! Fr
 - **Expiry Tracking**: Automatic expiration date detection and reminders
 - **Inventory Management**: Keep a real-time overview of everything in your fridge
 - **Image Storage**: Upload and store product photos securely
-- **Smart Notifications**: Get alerts before items expire _(feature coming soon!)_
+- **Smart Notifications**: Get alerts 3 days before items expire
 
 Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll always know what you have, when it expires, and how to use it before it goes bad!
 
@@ -25,6 +25,8 @@ Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll
 - **React Native** – Mobile app framework
 - **Expo** – Development platform and tools
 - **Expo Router** – File-based navigation
+- **Expo Notifications** – Push notification system
+- **Expo Task Manager** – Background notification processing
 - **NativeWind** – Tailwind CSS for React Native
 - **TypeScript** – Type safety
 - **Supabase** – Backend database, auth & storage
@@ -37,6 +39,7 @@ Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll
 This is a full-stack mobile application featuring:
 - **Frontend**: React Native with Expo for cross-platform mobile development
 - **Backend**: Supabase for database, authentication, and file storage
+- **Notifications**: Smart notification system with background scheduling
 - **AI Integration**: OpenAI Vision API for intelligent food recognition
 - **Security**: User authentication with data isolation and session persistence
 
@@ -56,8 +59,6 @@ The app uses PostgreSQL via Supabase with user authentication and data isolation
 - **products** - Food items with expiration tracking (user-specific)
 - **categories** - Food categories (fruits, vegetables, etc.)
 - **Storage bucket** - Product images with secure access
-
-
 
 ## CI/CD Pipeline
 
@@ -131,11 +132,18 @@ npx expo start
 # Press 'i' in the terminal to open iOS simulator
 ```
 
-### Option 3: Android Emulator
+### Option 3: Development Build (For Full Notification Support on Android)
+
+For the complete notification experience on Android:
 
 ```bash
-npx expo start
-# Press 'a' in the terminal to open Android emulator
+# Install EAS CLI
+npm install -g @expo/eas-cli
+
+# Build development version
+eas build --profile development --platform android
+
+# Install the APK on your Android device
 ```
 
 ## Features in Detail
@@ -153,6 +161,14 @@ npx expo start
 - Visual expiry tracking
 - User-specific data isolation
 
+### Notification System
+- Push notifications 3 days before food items expire
+- Customizable notification timing and preferences in Settings
+- Cross-platform support (iOS & Android) 
+- User-controlled enable/disable toggle
+- Background notification scheduling and management
+- Automatic rescheduling when products are updated
+  
 ### Data Storage
 - Real-time synchronization
 - Secure image storage
@@ -162,8 +178,11 @@ npx expo start
 ## Development Commands
 
 ```bash
-# Start development server
+# Start development server for Expo Go
 npm start
+
+# Start development server for development builds  
+npx expo start --dev-client
 
 # Start with cache cleared
 npx expo start --clear
@@ -182,6 +201,14 @@ npx tsc --noEmit
 npm audit
 ```
 
+## Development Notes
+
+### Notifications
+- **iOS**: Full notification support in Expo Go and development builds
+- **Android**: Requires development build for notifications (Expo Go limitation in SDK 53+)
+- **Development build**: `eas build --profile development --platform android`
+- **Testing**: Use `npx expo start --dev-client` for development builds, `npx expo start` for Expo Go
+
 ## Acknowledgments
 
 - 🥇 **Originally conceived during Clean Code Hackathon 2025 – First Place Winner!** 🥇
@@ -192,6 +219,3 @@ npm audit
 ## Author
 
 **Catalina Avadani** - [GitHub](https://github.com/CatAvadani) | [LinkedIn](https://www.linkedin.com/in/catalinaava09/)
-
-
-
