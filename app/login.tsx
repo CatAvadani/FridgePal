@@ -12,13 +12,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   const {
     control,
@@ -79,73 +80,84 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout>
-      <View className='flex-1 justify-center'>
-        <AuthHeader
-          title='Welcome back!'
-          customImage={require('@/assets/images/welcome_img.png')}
-          imageSize={90}
-        />
-
-        <View className='mb-6'>
-          <Controller
-            control={control}
-            name='email'
-            render={({ field: { onChange, value } }) => (
-              <AuthInput
-                label='Email Address'
-                placeholder='Enter your email'
-                value={value}
-                onChangeText={onChange}
-                error={errors.email?.message}
-                keyboardType='email-address'
-                autoCapitalize='none'
-                icon='email'
-              />
-            )}
+      <ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingBottom: 100, // Extra space for keyboard
+        }}
+        keyboardShouldPersistTaps='handled'
+        keyboardDismissMode='on-drag'
+      >
+        <View className='flex-1 justify-center'>
+          <AuthHeader
+            title='Welcome back!'
+            customImage={require('@/assets/images/welcome_img.png')}
+            imageSize={90}
           />
 
-          <Controller
-            control={control}
-            name='password'
-            render={({ field: { onChange, value } }) => (
-              <AuthInput
-                label='Password'
-                placeholder='Enter your password'
-                value={value}
-                onChangeText={onChange}
-                error={errors.password?.message}
-                secureTextEntry={!showPassword}
-                autoCapitalize='none'
-                icon='lock'
-                showPasswordToggle
-                onTogglePassword={() => setShowPassword(!showPassword)}
-                showPassword={showPassword}
-              />
-            )}
+          <View className='mb-6'>
+            <Controller
+              control={control}
+              name='email'
+              render={({ field: { onChange, value } }) => (
+                <AuthInput
+                  label='Email Address'
+                  placeholder='Enter your email'
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.email?.message}
+                  keyboardType='email-address'
+                  autoCapitalize='none'
+                  icon='email'
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name='password'
+              render={({ field: { onChange, value } }) => (
+                <AuthInput
+                  label='Password'
+                  placeholder='Enter your password'
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.password?.message}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize='none'
+                  icon='lock'
+                  showPasswordToggle
+                  onTogglePassword={() => setShowPassword(!showPassword)}
+                  showPassword={showPassword}
+                />
+              )}
+            />
+          </View>
+
+          <AuthButton
+            title='Sign In'
+            onPress={handleSubmit(onSubmit)}
+            loading={isLoading}
+            disabled={!isValid}
+            disabledReason={getDisabledReason()}
           />
-        </View>
 
-        <AuthButton
-          title='Sign In'
-          onPress={handleSubmit(onSubmit)}
-          loading={isLoading}
-          disabled={!isValid}
-          disabledReason={getDisabledReason()}
-        />
-
-        <TouchableOpacity className='mb-8'>
-          <Text className='text-primary text-center font-medium'>
-            Forgot Password?
-          </Text>
-        </TouchableOpacity>
-
-        <View className='flex-row justify-center'>
-          <Text className='text-gray-600'>Don&#39;t have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/register')}>
-            <Text className='text-primary font-bold'>Sign Up</Text>
+          <TouchableOpacity className='mb-8'>
+            <Text className='text-primary text-center font-medium'>
+              Forgot Password?
+            </Text>
           </TouchableOpacity>
+
+          <View className='flex-row justify-center'>
+            <Text className='text-gray-600'>Don&#39;t have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/register')}>
+              <Text className='text-primary font-bold'>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </AuthLayout>
   );
 }

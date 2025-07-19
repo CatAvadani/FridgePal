@@ -11,12 +11,12 @@ export const passwordSchema = z
   .min(6, 'Password must be at least 8 characters')
   .max(100, 'Password must be less than 100 characters')
   .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-  // .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-  .regex(/[0-9]/, 'Password must contain at least one number');
-// .regex(
-//   /[^a-zA-Z0-9]/,
-//   'Password must contain at least one special character'
-// );
+  .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+  .regex(/[0-9]/, 'Password must contain at least one number')
+  .regex(
+    /[^a-zA-Z0-9]/,
+    'Password must contain at least one special character'
+  );
 
 export const nameSchema = z
   .string()
@@ -60,9 +60,9 @@ export const checkPasswordStrength = (
   const checks = [
     { test: /.{6,}/, points: 1 }, // Length
     { test: /[a-z]/, points: 1 }, // Lowercase
-    // { test: /[A-Z]/, points: 1 }, // Uppercase
+    { test: /[A-Z]/, points: 1 }, // Uppercase
     { test: /[0-9]/, points: 1 }, // Numbers
-    // { test: /[^a-zA-Z0-9]/, points: 1 }, // Special chars
+    { test: /[^a-zA-Z0-9]/, points: 1 }, // Special chars
     { test: /.{12,}/, points: 1 }, // Extra length bonus
   ];
 
