@@ -11,6 +11,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.catalina-ava.FridgePal"
     },
+    "icon": "./assets/images/splash-icon.png",
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -22,9 +23,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": [
-        "android.permission.CAMERA"
-      ],
+      "permissions": ["android.permission.CAMERA"],
       "package": "com.catalina_ava.FridgePal"
     },
     "web": {
