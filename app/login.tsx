@@ -3,98 +3,146 @@ import AuthHeader from '@/components/auth/AuthHeader';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthLayout from '@/components/auth/AuthLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  LoginFormData,
+  loginSchema,
+  mapSupabaseError,
+} from '@/utils/authValidation';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn, isLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { signIn } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSignIn = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, isDirty },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const watchedFields = watch();
+
+  const getDisabledReason = (): string | undefined => {
+    if (!isDirty) return 'Please enter your login credentials';
+
+    const emailEmpty = !watchedFields.email?.trim();
+    const passwordEmpty = !watchedFields.password?.trim();
+    const emailInvalid = watchedFields.email && errors.email;
+
+    if (emailEmpty && passwordEmpty) {
+      return 'Please enter your email and password';
+    } else if (emailEmpty) {
+      return 'Please enter your email address';
+    } else if (passwordEmpty) {
+      return 'Please enter your password';
+    } else if (emailInvalid) {
+      return 'Please enter a valid email address';
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
+    return undefined;
+  };
 
+  const onSubmit = async (data: LoginFormData) => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     try {
-      const result = await signIn(email, password);
+      const result = await signIn(data.email, data.password);
 
       if (result.success) {
         router.replace('/(tabs)/home');
       } else {
-        Alert.alert('Sign In Failed', result.message);
+        const errorMessage = mapSupabaseError(result.error);
+        Alert.alert('Sign In Failed', errorMessage);
       }
     } catch (error) {
-      Alert.alert(
-        'Sign In Failed',
-        'An unexpected error occurred. Please try again.'
-      );
+      console.error('Login error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleForgotPassword = () => {
-    Alert.alert('Forgot Password', 'Password reset functionality coming soon!');
-  };
-
-  const navigateToRegister = () => {
-    router.replace('/register');
   };
 
   return (
     <AuthLayout>
       <View className='flex-1 justify-center'>
-        <AuthHeader title='Welcome back!' />
+        <AuthHeader
+          title='Welcome back!'
+          customImage={require('@/assets/images/welcome_img.png')}
+          imageSize={90}
+        />
 
-        <View className='gap-4 mb-6'>
-          <AuthInput
-            placeholder='Email'
-            value={email}
-            onChangeText={setEmail}
-            keyboardType='email-address'
-            autoCapitalize='none'
-            autoComplete='email'
-            editable={!isLoading}
+        <View className='mb-6'>
+          <Controller
+            control={control}
+            name='email'
+            render={({ field: { onChange, value } }) => (
+              <AuthInput
+                label='Email Address'
+                placeholder='Enter your email'
+                value={value}
+                onChangeText={onChange}
+                error={errors.email?.message}
+                keyboardType='email-address'
+                autoCapitalize='none'
+                icon='email'
+              />
+            )}
           />
-          <AuthInput
-            placeholder='Password'
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete='password'
-            editable={!isLoading}
+
+          <Controller
+            control={control}
+            name='password'
+            render={({ field: { onChange, value } }) => (
+              <AuthInput
+                label='Password'
+                placeholder='Enter your password'
+                value={value}
+                onChangeText={onChange}
+                error={errors.password?.message}
+                secureTextEntry={!showPassword}
+                autoCapitalize='none'
+                icon='lock'
+                showPasswordToggle
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                showPassword={showPassword}
+              />
+            )}
           />
         </View>
 
         <AuthButton
-          title={isLoading ? 'Signing In...' : 'Sign In'}
-          onPress={handleSignIn}
-          disabled={isLoading}
+          title='Sign In'
+          onPress={handleSubmit(onSubmit)}
+          loading={isLoading}
+          disabled={!isValid}
+          disabledReason={getDisabledReason()}
         />
 
-        <TouchableOpacity
-          onPress={handleForgotPassword}
-          className='mb-8'
-          disabled={isLoading}
-        >
-          <Text className='text-blue-600 text-center font-medium'>
-            Forgot Password
+        <TouchableOpacity className='mb-8'>
+          <Text className='text-primary text-center font-medium'>
+            Forgot Password?
           </Text>
         </TouchableOpacity>
 
         <View className='flex-row justify-center'>
           <Text className='text-gray-600'>Don&#39;t have an account? </Text>
-          <TouchableOpacity onPress={navigateToRegister} disabled={isLoading}>
-            <Text className='text-blue-600 font-bold'>Sign Up</Text>
+          <TouchableOpacity onPress={() => router.push('/register')}>
+            <Text className='text-primary font-bold'>Sign Up</Text>
           </TouchableOpacity>
         </View>
       </View>
