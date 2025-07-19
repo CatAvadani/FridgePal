@@ -128,7 +128,7 @@ export default function RegisterScreen() {
         <AuthHeader
           title='Create Your Account'
           subtitle='Join FridgePal to manage your food inventory'
-          customImage={require('@/assets/images/welcome_img.png')}
+          customImage={require('@/assets/images/splash-icon.png')}
           imageSize={90}
         />
 

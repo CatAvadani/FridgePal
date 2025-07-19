@@ -1,5 +1,6 @@
 import SettingsItem from '@/components/SettingsItem';
 import TimePicker from '@/components/TimePicker';
+import { headerClassName } from '@/constants/headerClassName';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { notificationManager } from '@/services/notificationManager';
@@ -98,10 +99,6 @@ export default function SettingsScreen() {
     </Text>
   );
 
-  const headerClassName = `flex-row items-center justify-between pb-3 ${
-    Platform.OS === 'android' ? 'pt-10' : 'pt-0'
-  }`;
-
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900 pb-12'>
       <ScrollView className='flex-1'>
@@ -155,25 +152,23 @@ export default function SettingsScreen() {
             }}
           />
         )}
-        <SettingsItem
+        {/* <SettingsItem
           title='Dark Mode'
           subtitle='Switch between light and dark themes'
           isToggle={true}
           toggleValue={darkMode}
           onToggle={setDarkMode}
-        />
+        /> */}
         <SectionHeader title='Support' />
         <SettingsItem
           title='Help & Support'
           subtitle='Get help and contact support'
-          onPress={() => Alert.alert('Help', 'Help section would go here')}
+          onPress={() => router.push('/help')}
         />
         <SettingsItem
           title='About'
           subtitle='Version 1.0.0'
-          onPress={() =>
-            Alert.alert('About', 'App info and terms would go here')
-          }
+          onPress={() => router.push('/about')}
         />
         <SectionHeader title='Sign Out' />
         <SettingsItem
