@@ -13,7 +13,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -21,6 +28,7 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   const {
     control,
@@ -67,6 +75,8 @@ export default function RegisterScreen() {
   const onSubmit = async (data: RegisterFormData) => {
     if (isLoading) return;
 
+    Keyboard.dismiss();
+
     setIsLoading(true);
     try {
       const result = await signUp(
@@ -103,134 +113,152 @@ export default function RegisterScreen() {
 
   return (
     <AuthLayout>
-      <AuthHeader
-        title='Create Your Account'
-        subtitle='Join FridgePal to manage your food inventory'
-        customImage={require('@/assets/images/welcome_img.png')}
-        imageSize={90}
-      />
+      <ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps='handled'
+        keyboardDismissMode='on-drag'
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingTop: 20,
+          paddingBottom: 180, // Extra padding for keyboard
+        }}
+      >
+        <AuthHeader
+          title='Create Your Account'
+          subtitle='Join FridgePal to manage your food inventory'
+          customImage={require('@/assets/images/welcome_img.png')}
+          imageSize={90}
+        />
 
-      <View className=' mb-6'>
-        {/* Name Fields */}
-        <View className='flex-row gap-2'>
+        <View className='mb-6'>
+          {/* Name Fields */}
+          <View className='flex-row gap-2'>
+            <Controller
+              control={control}
+              name='firstName'
+              render={({ field: { onChange, value } }) => (
+                <AuthInput
+                  label='First Name'
+                  placeholder='First name'
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.firstName?.message}
+                  icon='person'
+                  halfWidth
+                  scrollViewRef={scrollViewRef}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name='lastName'
+              render={({ field: { onChange, value } }) => (
+                <AuthInput
+                  label='Last Name'
+                  placeholder='Last name'
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.lastName?.message}
+                  icon='person'
+                  halfWidth
+                  scrollViewRef={scrollViewRef}
+                />
+              )}
+            />
+          </View>
+
+          {/* Email */}
           <Controller
             control={control}
-            name='firstName'
+            name='email'
             render={({ field: { onChange, value } }) => (
               <AuthInput
-                label='First Name'
-                placeholder='First name'
+                label='Email Address'
+                placeholder='Enter your email'
                 value={value}
                 onChangeText={onChange}
-                error={errors.firstName?.message}
-                icon='person'
-                halfWidth
+                error={errors.email?.message}
+                keyboardType='email-address'
+                autoCapitalize='none'
+                icon='email'
+                scrollViewRef={scrollViewRef}
               />
             )}
           />
 
+          {/* Password */}
           <Controller
             control={control}
-            name='lastName'
+            name='password'
+            render={({ field: { onChange, value } }) => (
+              <View>
+                <AuthInput
+                  label='Password'
+                  placeholder='Create a password'
+                  value={value}
+                  onChangeText={onChange}
+                  error={errors.password?.message}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize='none'
+                  icon='lock'
+                  showPasswordToggle
+                  onTogglePassword={() => setShowPassword(!showPassword)}
+                  showPassword={showPassword}
+                  scrollViewRef={scrollViewRef}
+                />
+                <PasswordStrengthIndicator password={value} />
+              </View>
+            )}
+          />
+
+          {/* Confirm Password */}
+          <Controller
+            control={control}
+            name='confirmPassword'
             render={({ field: { onChange, value } }) => (
               <AuthInput
-                label='Last Name'
-                placeholder='Last name'
+                scrollViewRef={scrollViewRef}
+                label='Confirm Password'
+                placeholder='Confirm your password'
                 value={value}
                 onChangeText={onChange}
-                error={errors.lastName?.message}
-                icon='person'
-                halfWidth
+                error={errors.confirmPassword?.message}
+                secureTextEntry={!showConfirmPassword}
+                autoCapitalize='none'
+                icon='lock'
+                showPasswordToggle
+                onTogglePassword={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
+                showPassword={showConfirmPassword}
               />
             )}
           />
         </View>
 
-        {/* Email */}
-        <Controller
-          control={control}
-          name='email'
-          render={({ field: { onChange, value } }) => (
-            <AuthInput
-              label='Email Address'
-              placeholder='Enter your email'
-              value={value}
-              onChangeText={onChange}
-              error={errors.email?.message}
-              keyboardType='email-address'
-              autoCapitalize='none'
-              icon='email'
-            />
-          )}
+        <AuthButton
+          title='Create Account'
+          onPress={handleSubmit(onSubmit)}
+          loading={isLoading}
+          disabled={!isValid}
+          disabledReason={getDisabledReason()}
         />
 
-        {/* Password */}
-        <Controller
-          control={control}
-          name='password'
-          render={({ field: { onChange, value } }) => (
-            <View>
-              <AuthInput
-                label='Password'
-                placeholder='Create a password'
-                value={value}
-                onChangeText={onChange}
-                error={errors.password?.message}
-                secureTextEntry={!showPassword}
-                autoCapitalize='none'
-                icon='lock'
-                showPasswordToggle
-                onTogglePassword={() => setShowPassword(!showPassword)}
-                showPassword={showPassword}
-              />
-              <PasswordStrengthIndicator password={value} />
-            </View>
-          )}
-        />
+        <Text className='text-xs text-gray-500 text-center mb-4 leading-4'>
+          By creating an account, you agree to our{' '}
+          <Text className='text-primary'>Terms and Conditions</Text>
+        </Text>
 
-        {/* Confirm Password */}
-        <Controller
-          control={control}
-          name='confirmPassword'
-          render={({ field: { onChange, value } }) => (
-            <AuthInput
-              label='Confirm Password'
-              placeholder='Confirm your password'
-              value={value}
-              onChangeText={onChange}
-              error={errors.confirmPassword?.message}
-              secureTextEntry={!showConfirmPassword}
-              autoCapitalize='none'
-              icon='lock'
-              showPasswordToggle
-              onTogglePassword={() =>
-                setShowConfirmPassword(!showConfirmPassword)
-              }
-              showPassword={showConfirmPassword}
-            />
-          )}
-        />
-      </View>
-
-      <AuthButton
-        title='Create Account'
-        onPress={handleSubmit(onSubmit)}
-        loading={isLoading}
-        disabled={!isValid}
-        disabledReason={getDisabledReason()}
-      />
-
-      <Text className='text-xs text-gray-500 text-center mb-4 leading-4'>
-        By creating an account, you agree to our{' '}
-        <Text className='text-primary'>Terms and Conditions</Text>
-      </Text>
-
-      <View className='flex-row justify-center'>
-        <Text className='text-gray-600'>Already have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/login')}>
-          <Text className='text-primary font-bold'>Sign In</Text>
-        </TouchableOpacity>
-      </View>
+        <View className='flex-row justify-center mb-10'>
+          <Text className='text-gray-600'>Already have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/login')}>
+            <Text className='text-primary font-bold'>Sign In</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </AuthLayout>
   );
 }
