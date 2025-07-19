@@ -4,8 +4,8 @@
 
 <div align="left">
   <img src="assets/images/phones_1.png" alt="phone views of the app" width="510px"/>
-    <img src="assets/images/Welcome_screen.png" alt="phone views of the app" width="137px"/>
-    <img src="assets/images/Register_img.png" alt="phone views of the app" width="135px"/>
+    <img src="assets/images/Welcome_screen.png" alt="phone views of the app" width="138px"/>
+    <img src="assets/images/Login_img.png" alt="phone views of the app" width="137px"/>
 </div>
 
 Your smart kitchen companion that helps you reduce food waste and save money! FridgePal uses your phone's camera to scan and identify food products, automatically tracking their expiration dates so you never have to guess what's fresh in your fridge.
