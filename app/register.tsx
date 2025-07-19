@@ -2,51 +2,85 @@ import AuthButton from '@/components/auth/AuthButton';
 import AuthHeader from '@/components/auth/AuthHeader';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthLayout from '@/components/auth/AuthLayout';
-import GoogleSignUpButton from '@/components/auth/GoogleSignUpButton';
+import PasswordStrengthIndicator from '@/components/auth/PasswordStrenghtIndicator';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  RegisterFormData,
+  mapSupabaseError,
+  registerSchema,
+} from '@/utils/authValidation';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const { signUp, isLoading } = useAuth();
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { signUp } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleRegister = async () => {
-    console.log('🎯 Starting handleRegister...');
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, isDirty },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: 'onChange',
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
-    if (!firstName || !lastName || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+  const watchedFields = watch();
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
+  const getDisabledReason = (): string | undefined => {
+    if (!isDirty) return 'Please fill out the registration form';
 
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return;
-    }
+    const { firstName, lastName, email, password, confirmPassword } =
+      watchedFields;
 
+    // Check for empty required fields
+    if (!firstName?.trim()) return 'Please enter your first name';
+    if (!lastName?.trim()) return 'Please enter your last name';
+    if (!email?.trim()) return 'Please enter your email address';
+    if (!password?.trim()) return 'Please create a password';
+    if (!confirmPassword?.trim()) return 'Please confirm your password';
+
+    // Check for validation errors
+    if (errors.firstName) return 'Please check your first name';
+    if (errors.lastName) return 'Please check your last name';
+    if (errors.email) return 'Please enter a valid email address';
+    if (errors.password) return 'Please create a stronger password';
+    if (errors.confirmPassword) return "Passwords don't match";
+
+    return undefined;
+  };
+
+  const onSubmit = async (data: RegisterFormData) => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     try {
-      const result = await signUp(email, password, firstName, lastName);
+      const result = await signUp(
+        data.email,
+        data.password,
+        data.firstName,
+        data.lastName
+      );
 
       if (result.success) {
-        // Show success message
         Alert.alert('Success!', result.message, [
           {
             text: 'OK',
             onPress: () => {
-              // If email verification is required, go to login
-              // If auto-signed in, navigation will happen via auth state change
               if (result.message.includes('email verification')) {
                 router.replace('/login');
               } else {
@@ -56,22 +90,15 @@ export default function RegisterScreen() {
           },
         ]);
       } else {
-        Alert.alert('Registration Failed', result.message);
+        const errorMessage = mapSupabaseError(result.error);
+        Alert.alert('Registration Failed', errorMessage);
       }
     } catch (error) {
-      Alert.alert(
-        'Registration Failed',
-        'An unexpected error occurred. Please try again.'
-      );
+      console.error('Registration error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleGoogleSignUp = () => {
-    Alert.alert('Google Sign Up', 'Google sign up functionality coming soon!');
-  };
-
-  const navigateToLogin = () => {
-    router.replace('/login');
   };
 
   return (
@@ -79,65 +106,129 @@ export default function RegisterScreen() {
       <AuthHeader
         title='Create Your Account'
         subtitle='Join FridgePal to manage your food inventory'
+        customImage={require('@/assets/images/welcome_img.png')}
+        imageSize={90}
       />
 
-      <View className='gap-4 mb-6'>
+      <View className=' mb-6'>
+        {/* Name Fields */}
         <View className='flex-row gap-2'>
-          <View className='flex-1'>
-            <AuthInput
-              placeholder='First Name'
-              value={firstName}
-              onChangeText={setFirstName}
-              editable={!isLoading}
-            />
-          </View>
-          <View className='flex-1'>
-            <AuthInput
-              placeholder='Last Name'
-              value={lastName}
-              onChangeText={setLastName}
-              editable={!isLoading}
-            />
-          </View>
+          <Controller
+            control={control}
+            name='firstName'
+            render={({ field: { onChange, value } }) => (
+              <AuthInput
+                label='First Name'
+                placeholder='First name'
+                value={value}
+                onChangeText={onChange}
+                error={errors.firstName?.message}
+                icon='person'
+                halfWidth
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name='lastName'
+            render={({ field: { onChange, value } }) => (
+              <AuthInput
+                label='Last Name'
+                placeholder='Last name'
+                value={value}
+                onChangeText={onChange}
+                error={errors.lastName?.message}
+                icon='person'
+                halfWidth
+              />
+            )}
+          />
         </View>
 
-        <AuthInput
-          placeholder='Email Address'
-          value={email}
-          onChangeText={setEmail}
-          keyboardType='email-address'
-          autoCapitalize='none'
-          autoComplete='email'
-          editable={!isLoading}
+        {/* Email */}
+        <Controller
+          control={control}
+          name='email'
+          render={({ field: { onChange, value } }) => (
+            <AuthInput
+              label='Email Address'
+              placeholder='Enter your email'
+              value={value}
+              onChangeText={onChange}
+              error={errors.email?.message}
+              keyboardType='email-address'
+              autoCapitalize='none'
+              icon='email'
+            />
+          )}
         />
 
-        <AuthInput
-          placeholder='Password'
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoComplete='new-password'
-          editable={!isLoading}
+        {/* Password */}
+        <Controller
+          control={control}
+          name='password'
+          render={({ field: { onChange, value } }) => (
+            <View>
+              <AuthInput
+                label='Password'
+                placeholder='Create a password'
+                value={value}
+                onChangeText={onChange}
+                error={errors.password?.message}
+                secureTextEntry={!showPassword}
+                autoCapitalize='none'
+                icon='lock'
+                showPasswordToggle
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                showPassword={showPassword}
+              />
+              <PasswordStrengthIndicator password={value} />
+            </View>
+          )}
+        />
+
+        {/* Confirm Password */}
+        <Controller
+          control={control}
+          name='confirmPassword'
+          render={({ field: { onChange, value } }) => (
+            <AuthInput
+              label='Confirm Password'
+              placeholder='Confirm your password'
+              value={value}
+              onChangeText={onChange}
+              error={errors.confirmPassword?.message}
+              secureTextEntry={!showConfirmPassword}
+              autoCapitalize='none'
+              icon='lock'
+              showPasswordToggle
+              onTogglePassword={() =>
+                setShowConfirmPassword(!showConfirmPassword)
+              }
+              showPassword={showConfirmPassword}
+            />
+          )}
         />
       </View>
 
       <AuthButton
-        title={isLoading ? 'Creating Account...' : 'Create Account'}
-        onPress={handleRegister}
-        disabled={isLoading}
+        title='Create Account'
+        onPress={handleSubmit(onSubmit)}
+        loading={isLoading}
+        disabled={!isValid}
+        disabledReason={getDisabledReason()}
       />
 
-      <Text className='text-xs text-gray-500 text-center mb-6 leading-4'>
+      <Text className='text-xs text-gray-500 text-center mb-4 leading-4'>
         By creating an account, you agree to our{' '}
-        <Text className='text-blue-600'>Terms and Conditions</Text>
+        <Text className='text-primary'>Terms and Conditions</Text>
       </Text>
-
-      <GoogleSignUpButton onPress={handleGoogleSignUp} />
 
       <View className='flex-row justify-center'>
         <Text className='text-gray-600'>Already have an account? </Text>
-        <TouchableOpacity onPress={navigateToLogin} disabled={isLoading}>
-          <Text className='text-blue-600 font-bold'>Sign In</Text>
+        <TouchableOpacity onPress={() => router.push('/login')}>
+          <Text className='text-primary font-bold'>Sign In</Text>
         </TouchableOpacity>
       </View>
     </AuthLayout>
