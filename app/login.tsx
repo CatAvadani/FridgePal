@@ -95,7 +95,7 @@ export default function LoginScreen() {
         <View className='flex-1 justify-center'>
           <AuthHeader
             title='Welcome back!'
-            customImage={require('@/assets/images/welcome_img.png')}
+            customImage={require('@/assets/images/splash-icon.png')}
             imageSize={90}
           />
 
