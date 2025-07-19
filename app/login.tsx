@@ -85,7 +85,9 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: 100, // Extra space for keyboard
+          paddingHorizontal: 24,
+          paddingTop: 20,
+          paddingBottom: 100,
         }}
         keyboardShouldPersistTaps='handled'
         keyboardDismissMode='on-drag'

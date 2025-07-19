@@ -1,6 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
+  Dimensions,
+  Keyboard,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -20,7 +23,7 @@ interface AuthInputProps extends TextInputProps {
   onTogglePassword?: () => void;
   showPassword?: boolean;
   halfWidth?: boolean;
-  scrollViewRef?: React.RefObject<ScrollView>;
+  scrollViewRef?: React.RefObject<ScrollView | null>;
 }
 
 export default function AuthInput({
@@ -41,22 +44,56 @@ export default function AuthInput({
   const containerRef = React.useRef<View>(null);
 
   const handleFocus = (e: any) => {
-    // Auto-scroll to input when focused (especially helpful for password fields)
     if (scrollViewRef?.current && containerRef.current) {
-      setTimeout(() => {
+      // Use requestAnimationFrame to ensure layout is complete
+      requestAnimationFrame(() => {
         containerRef.current?.measureInWindow((x, y, width, height) => {
-          // Scroll to bring the input into view with some padding
-          scrollViewRef.current?.scrollTo({
-            y: Math.max(0, y - 100), // 100px padding from top
-            animated: true,
+          // Get keyboard height based on platform
+          const keyboardHeight = Platform.select({
+            ios: 336, // iOS keyboard with suggestions
+            android: 300,
+            default: 300,
           });
+
+          const windowHeight = Dimensions.get('window').height;
+          const inputBottom = y + height;
+          const keyboardTop = windowHeight - keyboardHeight;
+
+          // Add extra padding to ensure input is visible above keyboard
+          const extraPadding = 20;
+
+          if (inputBottom > keyboardTop - extraPadding) {
+            const scrollAmount = inputBottom - keyboardTop + extraPadding + 50;
+
+            scrollViewRef.current?.scrollTo({
+              y: scrollAmount,
+              animated: true,
+            });
+          }
         });
-      }, 100); // Small delay to ensure keyboard animation starts
+      });
     }
 
-    // Call original onFocus if provided
     if (props.onFocus) {
       props.onFocus(e);
+    }
+  };
+
+  const handleBlur = (e: any) => {
+    // Optionally scroll back to top when keyboard dismisses
+    if (Platform.OS === 'ios' && scrollViewRef?.current) {
+      setTimeout(() => {
+        if (Keyboard.isVisible && Keyboard.isVisible() === false) {
+          scrollViewRef.current?.scrollTo({
+            y: 0,
+            animated: true,
+          });
+        }
+      }, 100);
+    }
+
+    if (props.onBlur) {
+      props.onBlur(e);
     }
   };
 
@@ -89,6 +126,7 @@ export default function AuthInput({
           value={value}
           onChangeText={onChangeText}
           onFocus={handleFocus}
+          onBlur={handleBlur}
           {...props}
         />
         {showPasswordToggle && (

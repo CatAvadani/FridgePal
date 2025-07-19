@@ -13,7 +13,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Keyboard,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -68,6 +75,8 @@ export default function RegisterScreen() {
   const onSubmit = async (data: RegisterFormData) => {
     if (isLoading) return;
 
+    Keyboard.dismiss();
+
     setIsLoading(true);
     try {
       const result = await signUp(
@@ -107,12 +116,14 @@ export default function RegisterScreen() {
       <ScrollView
         ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: 100, // Extra space for keyboard
-        }}
         keyboardShouldPersistTaps='handled'
         keyboardDismissMode='on-drag'
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingTop: 20,
+          paddingBottom: 180, // Extra padding for keyboard
+        }}
       >
         <AuthHeader
           title='Create Your Account'
@@ -121,7 +132,7 @@ export default function RegisterScreen() {
           imageSize={90}
         />
 
-        <View className=' mb-6'>
+        <View className='mb-6'>
           {/* Name Fields */}
           <View className='flex-row gap-2'>
             <Controller
@@ -136,6 +147,7 @@ export default function RegisterScreen() {
                   error={errors.firstName?.message}
                   icon='person'
                   halfWidth
+                  scrollViewRef={scrollViewRef}
                 />
               )}
             />
@@ -152,6 +164,7 @@ export default function RegisterScreen() {
                   error={errors.lastName?.message}
                   icon='person'
                   halfWidth
+                  scrollViewRef={scrollViewRef}
                 />
               )}
             />
@@ -171,6 +184,7 @@ export default function RegisterScreen() {
                 keyboardType='email-address'
                 autoCapitalize='none'
                 icon='email'
+                scrollViewRef={scrollViewRef}
               />
             )}
           />
@@ -193,6 +207,7 @@ export default function RegisterScreen() {
                   showPasswordToggle
                   onTogglePassword={() => setShowPassword(!showPassword)}
                   showPassword={showPassword}
+                  scrollViewRef={scrollViewRef}
                 />
                 <PasswordStrengthIndicator password={value} />
               </View>
@@ -205,6 +220,7 @@ export default function RegisterScreen() {
             name='confirmPassword'
             render={({ field: { onChange, value } }) => (
               <AuthInput
+                scrollViewRef={scrollViewRef}
                 label='Confirm Password'
                 placeholder='Confirm your password'
                 value={value}
@@ -236,7 +252,7 @@ export default function RegisterScreen() {
           <Text className='text-primary'>Terms and Conditions</Text>
         </Text>
 
-        <View className='flex-row justify-center'>
+        <View className='flex-row justify-center mb-10'>
           <Text className='text-gray-600'>Already have an account? </Text>
           <TouchableOpacity onPress={() => router.push('/login')}>
             <Text className='text-primary font-bold'>Sign In</Text>
