@@ -221,3 +221,11 @@ npm audit
 ## Author
 
 **Catalina Avadani** - [GitHub](https://github.com/CatAvadani) | [LinkedIn](https://www.linkedin.com/in/catalinaava09/)
+
+## License
+
+MIT Licensed. Copyright © 2025 Catalina Avadani.
+
+**™ FridgePal** is a trademark of Catalina Avadani.
+
+❤️ **Attributions make my day!**
