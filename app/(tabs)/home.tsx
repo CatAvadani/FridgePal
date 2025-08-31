@@ -11,6 +11,7 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   Image,
   RefreshControl,
   ScrollView,
@@ -100,6 +101,32 @@ export default function HomeScreen() {
 
   const hasAlerts = expiringCount > 0;
 
+  const handleLogout = () => {
+    showAlert({
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      icon: 'alert-circle',
+      buttons: [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('Starting logout process...');
+              await logout();
+              console.log('Logout successful, navigating to login');
+              router.replace('/login');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Logout Failed', 'Please try again.');
+            }
+          },
+        },
+      ],
+    });
+  };
+
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
       <ScrollView
@@ -134,9 +161,26 @@ export default function HomeScreen() {
             {hasAlerts && (
               <View style={{ position: 'relative', marginRight: 12 }}>
                 <TouchableOpacity
-                  onPress={() => router.push('/inventory?filter=expiring')}
+                  onPress={() => {
+                    showAlert({
+                      title: `${expiringCount} Items Expiring Soon`,
+                      message:
+                        expiringProducts
+                          .slice(0, 3)
+                          .map((p) => p.productName)
+                          .join(', ') + (expiringCount > 3 ? '...' : ''),
+                      buttons: [
+                        {
+                          text: 'View All',
+                          onPress: () =>
+                            router.push('/inventory?filter=expiring'),
+                        },
+                        { text: 'OK', style: 'cancel' },
+                      ],
+                    });
+                  }}
                   accessibilityRole='button'
-                  accessibilityLabel='Open expiring items'
+                  accessibilityLabel='Notifications'
                 >
                   <Feather name='bell' size={24} color='#6B7280' />
                 </TouchableOpacity>
@@ -155,7 +199,7 @@ export default function HomeScreen() {
             )}
 
             <TouchableOpacity
-              onPress={logout}
+              onPress={handleLogout}
               accessibilityRole='button'
               accessibilityLabel='Logout'
             >

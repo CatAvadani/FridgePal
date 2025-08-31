@@ -1,4 +1,5 @@
 import { AIAnalysisResult } from '@/types/interfaces';
+import { formatProductName } from '@/utils/formatProductName';
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
@@ -197,7 +198,7 @@ Analyze the image step by step:
         : getCategoryId(categoryName);
 
     const result: AIAnalysisResult = {
-      productName: aiResult.productName || 'Unknown Product',
+      productName: formatProductName(aiResult.productName || 'Unknown Product'),
       categoryName,
       categoryId,
       quantity: Math.round(quantity),

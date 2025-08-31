@@ -2,6 +2,7 @@ import CategoryModal from '@/components/CategoryModal';
 import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { CATEGORIES, CreateProductRequest } from '@/types/interfaces';
+import { formatProductName } from '@/utils/formatProductName';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -98,7 +99,7 @@ export default function AddProductScreen() {
     try {
       setSaving(true);
       const newProduct: CreateProductRequest = {
-        productName,
+        productName: formatProductName(productName),
         quantity: quantityNum,
         expirationDate: expirationDate.toISOString(),
         categoryId,
