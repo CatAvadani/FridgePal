@@ -2,6 +2,7 @@ import AuthButton from '@/components/auth/AuthButton';
 import AuthHeader from '@/components/auth/AuthHeader';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthLayout from '@/components/auth/AuthLayout';
+import CustomAlert from '@/components/CustomAlert';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   LoginFormData,
@@ -12,14 +13,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const scrollViewRef = React.useRef<ScrollView>(null);
+
+  // Alert states
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertButtons, setAlertButtons] = useState<any[]>([]);
 
   const {
     control,
@@ -57,6 +64,17 @@ export default function LoginScreen() {
     return undefined;
   };
 
+  const showAlert = (
+    title: string,
+    message: string,
+    buttons: any[] = [{ text: 'OK' }]
+  ) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertButtons(buttons);
+    setAlertVisible(true);
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     if (isLoading) return;
 
@@ -68,14 +86,51 @@ export default function LoginScreen() {
         router.replace('/(tabs)/home');
       } else {
         const errorMessage = mapSupabaseError(result.error);
-        Alert.alert('Sign In Failed', errorMessage);
+        showAlert('Sign In Failed', errorMessage);
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      showAlert('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    const emailValue = watchedFields.email?.trim();
+
+    if (!emailValue) {
+      showAlert(
+        'Email Required',
+        'Please enter your email address first, then tap "Forgot Password".'
+      );
+      return;
+    }
+
+    showAlert(
+      'Reset Password',
+      `We'll send a password reset link to ${emailValue}. Check your email and follow the instructions.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Send Link',
+          onPress: async () => {
+            setIsLoading(true);
+            const result = await resetPassword(emailValue);
+            setIsLoading(false);
+
+            if (result.success) {
+              showAlert(
+                'Reset Link Sent',
+                'Check your email for the password reset link.'
+              );
+            } else {
+              showAlert('Error', result.error || 'Failed to send reset link.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -146,8 +201,16 @@ export default function LoginScreen() {
             disabledReason={getDisabledReason()}
           />
 
-          <TouchableOpacity className='mb-8'>
-            <Text className='text-primary text-center font-medium'>
+          <TouchableOpacity
+            className='mb-8'
+            onPress={handleForgotPassword}
+            disabled={isLoading}
+          >
+            <Text
+              className={`text-center font-medium ${
+                isLoading ? 'text-gray-400' : 'text-primary'
+              }`}
+            >
               Forgot Password?
             </Text>
           </TouchableOpacity>
@@ -160,6 +223,14 @@ export default function LoginScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        buttons={alertButtons}
+        onDismiss={() => setAlertVisible(false)}
+      />
     </AuthLayout>
   );
 }

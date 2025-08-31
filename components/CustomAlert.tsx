@@ -51,8 +51,8 @@ export default function CustomAlert({
           borderRadius: 24,
           backgroundColor: theme.colors.surface,
           marginHorizontal: 20,
-          maxWidth: 400,
-          minWidth: 300,
+          maxWidth: 300,
+          minWidth: 250,
           alignSelf: 'center',
           elevation: 8,
           shadowColor: '#000',
@@ -69,7 +69,7 @@ export default function CustomAlert({
         <View style={{ paddingHorizontal: 24 }}>
           <Text
             style={{
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: '700',
               textAlign: 'center',
               color: theme.colors.onSurface,
@@ -82,7 +82,7 @@ export default function CustomAlert({
 
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: '500',
               textAlign: 'center',
               color: theme.colors.onSurfaceVariant,

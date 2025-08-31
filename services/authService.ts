@@ -24,8 +24,6 @@ export const signInWithEmail = async (
     });
 
     if (error) {
-      console.error('Sign in error:', error);
-
       if (error.message.includes('Invalid login credentials')) {
         return {
           success: false,
@@ -56,7 +54,7 @@ export const signInWithEmail = async (
       message: 'Sign in successful!',
     };
   } catch (error) {
-    console.error('Sign in failed:', error);
+    console.log('Sign in failed:', error);
     return {
       success: false,
       message: 'An unexpected error occurred',
@@ -93,7 +91,7 @@ export const signUpWithEmail = async (
     });
 
     if (error) {
-      console.error('Registration error:', error);
+      console.log('Registration error:', error);
       return {
         success: false,
         message: error.message,
@@ -157,6 +155,31 @@ export const signOut = async (): Promise<AuthResult> => {
       success: false,
       message: 'An unexpected error occurred',
       error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+};
+
+// Reset Password
+export const resetPassword = async (email: string): Promise<AuthResult> => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'fridgepal://reset-password', // Deep link to your app
+    });
+
+    if (error) {
+      return { success: false, message: error.message, error: error.message };
+    }
+
+    return {
+      success: true,
+      message: 'Password reset email sent successfully!',
+    };
+  } catch (error) {
+    console.log('Password reset error:', error);
+    return {
+      success: false,
+      message: 'An unexpected error occurred. Please try again.',
+      error: 'An unexpected error occurred. Please try again.',
     };
   }
 };

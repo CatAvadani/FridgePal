@@ -80,41 +80,31 @@ export const checkPasswordStrength = (
 };
 
 // Supabase error message mapper
-export const mapSupabaseError = (error: any): string => {
-  const message = error?.message || '';
+export const mapSupabaseError = (error: string | undefined): string => {
+  if (!error) return 'An unexpected error occurred';
 
-  // Common Supabase auth errors
-  if (message.includes('Invalid login credentials')) {
-    return 'Invalid email or password. Please check your credentials and try again.';
+  // Convert to lowercase for easier matching
+  const errorLower = error.toLowerCase();
+
+  if (errorLower.includes('invalid login credentials')) {
+    return 'The email or password you entered is incorrect. Please try again.';
   }
 
-  if (message.includes('Email not confirmed')) {
-    return 'Please check your email and click the confirmation link before signing in.';
-  }
-
-  if (message.includes('User already registered')) {
-    return 'An account with this email already exists. Try signing in instead.';
-  }
-
-  if (message.includes('Password should be at least')) {
-    return 'Password must be at least 6 characters long.';
-  }
-
-  if (message.includes('Unable to validate email address')) {
+  if (errorLower.includes('invalid email')) {
     return 'Please enter a valid email address.';
   }
 
-  if (message.includes('signup is disabled')) {
-    return 'New registrations are temporarily disabled. Please try again later.';
+  if (errorLower.includes('email not confirmed')) {
+    return 'Please check your email and click the confirmation link before signing in.';
   }
 
-  if (message.includes('Email rate limit exceeded')) {
-    return 'Too many email attempts. Please wait a few minutes before trying again.';
+  if (errorLower.includes('too many requests')) {
+    return 'Too many attempts. Please wait a moment and try again.';
   }
 
-  if (message.includes('Network request failed') || message.includes('fetch')) {
-    return 'Network error. Please check your internet connection and try again.';
+  if (errorLower.includes('password')) {
+    return 'Password is incorrect. Try again or use "Forgot Password".';
   }
 
-  return 'Something went wrong. Please try again.';
+  return error;
 };
