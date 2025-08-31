@@ -2139,7 +2139,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNDateTimePicker (8.3.0):
+  - RNDateTimePicker (8.4.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2835,7 +2835,7 @@ SPEC CHECKSUMS:
   ReactCodegen: c2f2ec5dd32215237420bedebae0e66867e1e8ea
   ReactCommon: e243aa261effc83c10208f0794bade55ca9ae5b6
   RNCAsyncStorage: a1c8cc8a99c32de1244a9cf707bf9d83d0de0f71
-  RNDateTimePicker: 43ee3de2bc639bc0d9b77564961060a54dfc7111
+  RNDateTimePicker: a4ad049fdd568755003c479beac3bdea742ac4d0
   RNGestureHandler: 7d0931a61d7ba0259f32db0ba7d0963c3ed15d2b
   RNReanimated: 2313402fe27fecb7237619e9c6fcee3177f08a65
   RNScreens: 482e9707f9826230810c92e765751af53826d509

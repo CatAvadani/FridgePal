@@ -9,22 +9,22 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.catalina-ava.FridgePal"
+      "bundleIdentifier": "com.catalinaava.FridgePal"
     },
-    "icon": "./assets/images/splash-icon.png",
+    "icon": "./assets/images/app-icon-new.png",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/app-icon-new.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash-icon.png",
-        "backgroundColor": "#00000000"
+        "foregroundImage": "./assets/images/app-icon-new.png",
+        "backgroundColor": "#ffcdc2"
       },
       "edgeToEdgeEnabled": true,
       "permissions": ["android.permission.CAMERA"],
-      "package": "com.catalina_ava.FridgePal"
+      "package": "com.catalinaava.FridgePal"
     },
     "web": {
       "bundler": "metro",
@@ -44,17 +44,17 @@
         "expo-notifications",
         {
           "sounds": [],
-          "color": "#4F46E5"
+          "color": "#ffcdc2"
         }
       ],
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/app-icon-new.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#ffeeeb"
         }
       ]
     ],
