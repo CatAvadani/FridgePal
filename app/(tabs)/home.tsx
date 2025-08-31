@@ -9,13 +9,14 @@ import { ProductDisplay } from '@/types/interfaces';
 import { convertToProductDisplay } from '@/utils/productUtils';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Image,
   RefreshControl,
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -25,11 +26,12 @@ import {
 } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProducts();
   const { showAlert } = useAlert();
   const [refreshing, setRefreshing] = useState(false);
+  const [query, setQuery] = useState('');
   const insets = useSafeAreaInsets();
 
   const userName = getUserDisplayName(user);
@@ -40,12 +42,30 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [fetchProducts]);
 
-  const productDisplays = products.map(convertToProductDisplay);
+  const productDisplays = useMemo(
+    () => products.map(convertToProductDisplay),
+    [products]
+  );
 
   // Filter and sort products that are expiring within the next 10 days
-  const expiringProducts = productDisplays
-    .filter((p) => p.daysUntilExpiry <= 10)
-    .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
+  const expiringProducts = useMemo(
+    () =>
+      productDisplays
+        .filter((p) => p.daysUntilExpiry <= 10)
+        .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry),
+    [productDisplays]
+  );
+
+  // Search filter (by productName or categoryName)
+  const filteredExpiring = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return expiringProducts;
+    return expiringProducts.filter(
+      (p) =>
+        (p.productName ?? '').toLowerCase().includes(q) ||
+        (p.categoryName ?? '').toLowerCase().includes(q)
+    );
+  }, [expiringProducts, query]);
 
   // Calculate dashboard stats
   const totalProducts = productDisplays.length;
@@ -78,6 +98,8 @@ export default function HomeScreen() {
     }
   };
 
+  const hasAlerts = expiringCount > 0;
+
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
       <ScrollView
@@ -92,7 +114,7 @@ export default function HomeScreen() {
           backgroundColor='transparent'
           translucent={true}
         />
-        {/* Header above image */}
+
         <View className='flex-row items-center justify-between m-4'>
           <View className='flex-row items-center'>
             <View className='w-10 h-10 bg-primary rounded-full mr-3 justify-center items-center'>
@@ -107,9 +129,37 @@ export default function HomeScreen() {
               </Text>
             </View>
           </View>
-          <View className='flex-row items-center space-x-3'>
-            <TouchableOpacity>
-              <Feather name='bell' size={24} color='#6B7280' />
+
+          <View className='flex-row items-center'>
+            {hasAlerts && (
+              <View style={{ position: 'relative', marginRight: 12 }}>
+                <TouchableOpacity
+                  onPress={() => router.push('/inventory?filter=expiring')}
+                  accessibilityRole='button'
+                  accessibilityLabel='Open expiring items'
+                >
+                  <Feather name='bell' size={24} color='#6B7280' />
+                </TouchableOpacity>
+                <View
+                  style={{
+                    position: 'absolute',
+                    right: -2,
+                    top: -2,
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: '#ef4444',
+                  }}
+                />
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={logout}
+              accessibilityRole='button'
+              accessibilityLabel='Logout'
+            >
+              <Feather name='power' size={22} color='#ef4444' />
             </TouchableOpacity>
           </View>
         </View>
@@ -141,13 +191,36 @@ export default function HomeScreen() {
             expiringCount={expiringCount}
             expiredCount={expiredCount}
             onPress={(type) => {
+              // you can wire this later to navigate
               console.log(`Navigate to ${type} items`);
             }}
           />
         </View>
 
-        <View className='mt-4'>
-          <QuickActions />
+        <View className='h-[1px] bg-gray-200 dark:bg-gray-800 rounded-full m-3' />
+
+        <QuickActions />
+
+        <View className='px-4 mb-4'>
+          <View className='flex-row items-center bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2'>
+            <Feather name='search' size={18} color='#6B7280' />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder='Search by name or category'
+              placeholderTextColor='#9CA3AF'
+              className='flex-1 ml-2 text-gray-900 dark:text-gray-100'
+              autoCorrect={false}
+              autoCapitalize='none'
+              returnKeyType='search'
+              style={{ height: 35 }}
+            />
+            {!!query && (
+              <TouchableOpacity onPress={() => setQuery('')}>
+                <Feather name='x' size={18} color='#6B7280' />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <View className='px-5 mb-16'>
@@ -155,14 +228,14 @@ export default function HomeScreen() {
             <Text className='text-xl font-semibold text-gray-800 dark:text-white'>
               Expiring Products
             </Text>
-            {expiringProducts.length === 0 && (
+            {filteredExpiring.length === 0 && (
               <Text className='text-sm text-green-600 dark:text-green-400 font-medium'>
                 All fresh! 🎉
               </Text>
             )}
           </View>
 
-          {expiringProducts.length === 0 ? (
+          {filteredExpiring.length === 0 ? (
             <View className='bg-green-50 dark:bg-green-900/20 p-6 rounded-lg border border-green-200 dark:border-green-800'>
               <Text className='text-center text-green-700 dark:text-green-300 font-medium'>
                 Great job! No items expiring in the next 10 days.
@@ -172,7 +245,7 @@ export default function HomeScreen() {
               </Text>
             </View>
           ) : (
-            expiringProducts.map((product, index) => (
+            filteredExpiring.map((product, index) => (
               <ProductCard
                 key={product.itemId}
                 product={product}
