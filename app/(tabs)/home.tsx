@@ -1,20 +1,24 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
+import StatsSummaryCard from '@/components/StatCard';
 import { getUserDisplayName } from '@/constants/getUserDisplayName';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { ProductDisplay } from '@/types/interfaces';
 import { convertToProductDisplay } from '@/utils/productUtils';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   Image,
-  Platform,
   RefreshControl,
   ScrollView,
   StatusBar,
   Text,
+  TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {
@@ -23,11 +27,12 @@ import {
 } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const { products, fetchProducts, deleteProduct } = useProducts();
   const { showAlert } = useAlert();
   const [refreshing, setRefreshing] = useState(false);
+  const [query, setQuery] = useState('');
   const insets = useSafeAreaInsets();
 
   const userName = getUserDisplayName(user);
@@ -38,12 +43,40 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [fetchProducts]);
 
-  const productDisplays = products.map(convertToProductDisplay);
+  const productDisplays = useMemo(
+    () => products.map(convertToProductDisplay),
+    [products]
+  );
 
   // Filter and sort products that are expiring within the next 10 days
-  const expiringProducts = productDisplays
-    .filter((p) => p.daysUntilExpiry <= 10)
-    .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
+  const expiringProducts = useMemo(
+    () =>
+      productDisplays
+        .filter((p) => p.daysUntilExpiry <= 10)
+        .sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry),
+    [productDisplays]
+  );
+
+  // Search filter (by productName or categoryName)
+  const filteredExpiring = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return expiringProducts;
+    return expiringProducts.filter(
+      (p) =>
+        (p.productName ?? '').toLowerCase().includes(q) ||
+        (p.categoryName ?? '').toLowerCase().includes(q)
+    );
+  }, [expiringProducts, query]);
+
+  // Calculate dashboard stats
+  const totalProducts = productDisplays.length;
+  const expiringCount = productDisplays.filter(
+    (p) => p.daysUntilExpiry <= 10 && p.daysUntilExpiry >= 0
+  ).length;
+  const expiredCount = productDisplays.filter(
+    (p) => p.daysUntilExpiry < 0
+  ).length;
+  const freshCount = totalProducts - expiringCount - expiredCount;
 
   const handleDeleteProduct = async (
     product: ProductDisplay
@@ -66,40 +99,36 @@ export default function HomeScreen() {
     }
   };
 
-  // Calculate the negative margin to extend image to top of screen
-  const imageMarginTop =
-    Platform.OS === 'ios' ? -insets.top : -(StatusBar.currentHeight ?? 0);
+  const hasAlerts = expiringCount > 0;
+
+  const handleLogout = () => {
+    showAlert({
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      icon: 'alert-circle',
+      buttons: [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('Starting logout process...');
+              await logout();
+              console.log('Logout successful, navigating to login');
+              router.replace('/login');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Logout Failed', 'Please try again.');
+            }
+          },
+        },
+      ],
+    });
+  };
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
-      <StatusBar
-        barStyle='light-content'
-        backgroundColor='transparent'
-        translucent={true}
-      />
-      <View className=' items-center'>
-        <Image
-          source={require('@/assets/images/Fridge_image.webp')}
-          className='w-full h-80 position-absolute top-0 left-0 right-0'
-          resizeMode='cover'
-          style={{ marginTop: imageMarginTop }}
-        />
-        <View
-          className='absolute top-0 left-0 right-0 h-80 bg-black opacity-40'
-          style={{ marginTop: imageMarginTop }}
-        />
-        <View
-          className='absolute top-0 left-0 right-0 h-72 items-center justify-between flex-row px-5'
-          style={{ marginTop: imageMarginTop }}
-        >
-          <Text
-            className='text-3xl font-bold text-white flex-1 text-center'
-            style={{ paddingTop: insets.top + 20 }}
-          >
-            FridgePal
-          </Text>
-        </View>
-      </View>
       <ScrollView
         className='flex-1'
         showsVerticalScrollIndicator={false}
@@ -107,32 +136,199 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <View className='px-5 py-6'>
-          <Text className='text-3xl font-bold text-gray-800 dark:text-white capitalize'>
-            Welcome, {userName}!
-          </Text>
-          <Text className='text-base text-gray-600 mt-1 dark:text-gray-300'>
-            Keep your food fresh.
-          </Text>
-          <Text className='text-sm text-gray-600 mt-1 dark:text-gray-300'>
-            Manage your fridge inventory effortlessly.
-          </Text>
+        <StatusBar
+          barStyle='dark-content'
+          backgroundColor='transparent'
+          translucent={true}
+        />
+
+        <View className='flex-row items-center justify-between m-4'>
+          <View className='flex-row items-center'>
+            <View className='w-10 h-10 bg-primary rounded-full mr-3 justify-center items-center'>
+              <Text className='text-white font-bold'>{userName.charAt(0)}</Text>
+            </View>
+            <View>
+              <Text className='text-2xl font-bold text-gray-800 dark:text-white'>
+                FridgePal
+              </Text>
+              <Text className='text-sm text-gray-500 dark:text-gray-400'>
+                Welcome, {userName}!
+              </Text>
+            </View>
+          </View>
+
+          <View className='flex-row items-center'>
+            {hasAlerts && (
+              <View style={{ position: 'relative', marginRight: 12 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    showAlert({
+                      title: `${expiringCount} Items Expiring Soon`,
+                      message:
+                        expiringProducts
+                          .slice(0, 3)
+                          .map((p) => p.productName)
+                          .join(', ') + (expiringCount > 3 ? '...' : ''),
+                      buttons: [
+                        {
+                          text: 'View All',
+                          onPress: () =>
+                            router.push('/inventory?filter=expiring'),
+                        },
+                        { text: 'OK', style: 'cancel' },
+                      ],
+                    });
+                  }}
+                  accessibilityRole='button'
+                  accessibilityLabel='Notifications'
+                >
+                  <Feather name='bell' size={24} color='#6B7280' />
+                </TouchableOpacity>
+                <View
+                  style={{
+                    position: 'absolute',
+                    right: -2,
+                    top: -2,
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: '#ef4444',
+                  }}
+                />
+              </View>
+            )}
+
+            <TouchableOpacity
+              onPress={handleLogout}
+              accessibilityRole='button'
+              accessibilityLabel='Logout'
+            >
+              <Feather name='power' size={22} color='#ef4444' />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View className='relative'>
+          {/* Background Image */}
+          <View className='h-48 mx-4 rounded-xl overflow-hidden'>
+            <Image
+              source={require('@/assets/images/Fridge_image.webp')}
+              className='w-full h-full'
+              resizeMode='cover'
+            />
+            {/* Light overlay for better contrast */}
+            <View className='absolute inset-0 bg-black opacity-10' />
+
+            <View className='absolute top-4 right-4'>
+              <View className='bg-green-400 bg-opacity-30 px-3 py-1 rounded-full'>
+                <Text className='text-black text-xs font-medium'>
+                  Keep Your Food Fresh{' '}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View className='px-5 -mt-8'>
+          <StatsSummaryCard
+            freshCount={freshCount}
+            expiringCount={expiringCount}
+            expiredCount={expiredCount}
+            onPress={(type) => {
+              // need to wire this later to navigate
+              console.log(`Navigate to ${type} items`);
+            }}
+          />
+        </View>
+
+        <View className='px-5 py-3'>
+          <View className='flex-row items-center justify-between mb-2'>
+            <Text className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+              Inventory Health
+            </Text>
+            <Text className='text-xs text-gray-500 dark:text-gray-400'>
+              {Math.round((freshCount / totalProducts) * 100) || 0}% fresh
+            </Text>
+          </View>
+          <View className='h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+            <View className='flex-row h-full'>
+              <View
+                className='bg-green-500 h-full'
+                style={{
+                  width: `${totalProducts > 0 ? (freshCount / totalProducts) * 100 : 0}%`,
+                }}
+              />
+              <View
+                className='bg-primary h-full'
+                style={{
+                  width: `${totalProducts > 0 ? (expiringCount / totalProducts) * 100 : 0}%`,
+                }}
+              />
+              <View
+                className='bg-red-500 h-full'
+                style={{
+                  width: `${totalProducts > 0 ? (expiredCount / totalProducts) * 100 : 0}%`,
+                }}
+              />
+            </View>
+          </View>
         </View>
 
         <QuickActions />
 
-        <View className='px-5 mb-16'>
-          <Text className='text-xl font-semibold text-gray-800 mb-4 dark:text-white'>
-            Expiring Products
-          </Text>
-          {expiringProducts.map((product, index) => (
-            <ProductCard
-              key={product.itemId}
-              product={product}
-              isFirstCard={index === 0}
-              onDelete={() => handleDeleteProduct(product)}
+        <View className='px-4 mb-4'>
+          <View className='flex-row items-center bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2'>
+            <Feather name='search' size={18} color='#6B7280' />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder='Search by name or category'
+              placeholderTextColor='#9CA3AF'
+              className='flex-1 ml-2 text-gray-900 dark:text-gray-100'
+              autoCorrect={false}
+              autoCapitalize='none'
+              returnKeyType='search'
+              style={{ height: 35 }}
             />
-          ))}
+            {!!query && (
+              <TouchableOpacity onPress={() => setQuery('')}>
+                <Feather name='x' size={18} color='#6B7280' />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <View className='px-5 mb-16'>
+          <View className='flex-row items-center justify-between mb-4'>
+            <Text className='text-xl font-semibold text-gray-800 dark:text-white'>
+              Expiring Products
+            </Text>
+            {filteredExpiring.length === 0 && (
+              <Text className='text-sm text-green-600 dark:text-green-400 font-medium'>
+                All fresh! 🎉
+              </Text>
+            )}
+          </View>
+
+          {filteredExpiring.length === 0 ? (
+            <View className='bg-green-50 dark:bg-green-900/20 p-6 rounded-lg border border-green-200 dark:border-green-800'>
+              <Text className='text-center text-green-700 dark:text-green-300 font-medium'>
+                Great job! No items expiring in the next 10 days.
+              </Text>
+              <Text className='text-center text-green-600 dark:text-green-400 text-sm mt-1'>
+                Add more items to keep tracking your inventory.
+              </Text>
+            </View>
+          ) : (
+            filteredExpiring.map((product, index) => (
+              <ProductCard
+                key={product.itemId}
+                product={product}
+                isFirstCard={index === 0}
+                onDelete={() => handleDeleteProduct(product)}
+              />
+            ))
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
