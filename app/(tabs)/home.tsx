@@ -1,5 +1,6 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
+import StatsSummaryCard from '@/components/StatCard';
 import { getUserDisplayName } from '@/constants/getUserDisplayName';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
@@ -48,11 +49,13 @@ export default function HomeScreen() {
 
   // Calculate dashboard stats
   const totalProducts = productDisplays.length;
-  const expiringCount = expiringProducts.length;
+  const expiringCount = productDisplays.filter(
+    (p) => p.daysUntilExpiry <= 10 && p.daysUntilExpiry >= 0
+  ).length;
   const expiredCount = productDisplays.filter(
     (p) => p.daysUntilExpiry < 0
   ).length;
-  const freshCount = totalProducts - expiringCount;
+  const freshCount = totalProducts - expiringCount - expiredCount;
 
   const handleDeleteProduct = async (
     product: ProductDisplay
@@ -77,61 +80,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50 dark:bg-gray-900'>
-      <StatusBar
-        barStyle='dark-content'
-        backgroundColor='transparent'
-        translucent={true}
-      />
-      {/* Header above image */}
-      <View className='flex-row items-center justify-between m-4'>
-        <View className='flex-row items-center'>
-          <View className='w-10 h-10 bg-primary rounded-full mr-3 justify-center items-center'>
-            <Text className='text-white font-bold'>{userName.charAt(0)}</Text>
-          </View>
-          <View>
-            <Text className='text-2xl font-bold text-gray-800 dark:text-white'>
-              FridgePal
-            </Text>
-            <Text className='text-sm text-gray-500 dark:text-gray-400'>
-              Welcome, {userName}!
-            </Text>
-          </View>
-        </View>
-        <View className='flex-row items-center space-x-3'>
-          <TouchableOpacity>
-            <Feather name='bell' size={24} color='#6B7280' />
-          </TouchableOpacity>
-          {/* <Text className='text-sm text-gray-500 bg-orange-100 px-3 py-1 rounded-full'>
-            {totalProducts} items
-          </Text> */}
-        </View>
-      </View>
-      <Text className='text-left text-gray-500 dark:text-gray-400 mb-4 mx-4'>
-        Keep track of your food and reduce waste!
-      </Text>
-
-      <View className='relative'>
-        {/* Background Image */}
-        <View className='h-48 mx-4 rounded-xl overflow-hidden'>
-          <Image
-            source={require('@/assets/images/Fridge_image.webp')}
-            className='w-full h-full'
-            resizeMode='cover'
-          />
-          {/* Light overlay for better contrast */}
-          <View className='absolute inset-0 bg-black opacity-10' />
-
-          {/* Optional: Category tags on image like fitness app */}
-          <View className='absolute top-4 right-4'>
-            <View className='bg-green-400 bg-opacity-30 px-3 py-1 rounded-full'>
-              <Text className='text-black text-xs font-medium'>
-                Keep Your Food Fresh{' '}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
-
       <ScrollView
         className='flex-1'
         showsVerticalScrollIndicator={false}
@@ -139,6 +87,65 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <StatusBar
+          barStyle='dark-content'
+          backgroundColor='transparent'
+          translucent={true}
+        />
+        {/* Header above image */}
+        <View className='flex-row items-center justify-between m-4'>
+          <View className='flex-row items-center'>
+            <View className='w-10 h-10 bg-primary rounded-full mr-3 justify-center items-center'>
+              <Text className='text-white font-bold'>{userName.charAt(0)}</Text>
+            </View>
+            <View>
+              <Text className='text-2xl font-bold text-gray-800 dark:text-white'>
+                FridgePal
+              </Text>
+              <Text className='text-sm text-gray-500 dark:text-gray-400'>
+                Welcome, {userName}!
+              </Text>
+            </View>
+          </View>
+          <View className='flex-row items-center space-x-3'>
+            <TouchableOpacity>
+              <Feather name='bell' size={24} color='#6B7280' />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View className='relative'>
+          {/* Background Image */}
+          <View className='h-48 mx-4 rounded-xl overflow-hidden'>
+            <Image
+              source={require('@/assets/images/Fridge_image.webp')}
+              className='w-full h-full'
+              resizeMode='cover'
+            />
+            {/* Light overlay for better contrast */}
+            <View className='absolute inset-0 bg-black opacity-10' />
+
+            <View className='absolute top-4 right-4'>
+              <View className='bg-green-400 bg-opacity-30 px-3 py-1 rounded-full'>
+                <Text className='text-black text-xs font-medium'>
+                  Keep Your Food Fresh{' '}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View className='px-5 -mt-8'>
+          <StatsSummaryCard
+            freshCount={freshCount}
+            expiringCount={expiringCount}
+            expiredCount={expiredCount}
+            onPress={(type) => {
+              console.log(`Navigate to ${type} items`);
+            }}
+          />
+        </View>
+
         <View className='mt-4'>
           <QuickActions />
         </View>
