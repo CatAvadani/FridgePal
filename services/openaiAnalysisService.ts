@@ -61,38 +61,51 @@ export const analyzeImageWithAI = async (
       response.blob().then((blob) => reader.readAsDataURL(blob));
     });
 
+    // IMPROVED PROMPT FOR BETTER ACCURACY
     const prompt = `
-          You are a smart fridge assistant.
+You are an expert food identification assistant. Analyze this image carefully and provide accurate information.
 
-          Here is the list of categories you must use:
-            [
-              { "categoryId": 1, "categoryName": "dairy" },
-              { "categoryId": 2, "categoryName": "meat" },
-              { "categoryId": 3, "categoryName": "vegetables" },
-              { "categoryId": 4, "categoryName": "fruits" },
-              { "categoryId": 5, "categoryName": "fish" },
-              { "categoryId": 6, "categoryName": "beverages" },
-              { "categoryId": 7, "categoryName": "frozen" },
-              { "categoryId": 8, "categoryName": "other" }
-         ]
+CATEGORIES (use exact categoryName):
+- { "categoryId": 1, "categoryName": "dairy" } - milk, cheese, yogurt, butter
+- { "categoryId": 2, "categoryName": "meat" } - beef, chicken, pork, lamb, deli meats
+- { "categoryId": 3, "categoryName": "vegetables" } - all vegetables, herbs, salads
+- { "categoryId": 4, "categoryName": "fruits" } - all fruits, berries
+- { "categoryId": 5, "categoryName": "fish" } - fish, seafood, shellfish
+- { "categoryId": 6, "categoryName": "beverages" } - drinks, juices, sodas
+- { "categoryId": 7, "categoryName": "frozen" } - frozen foods of any type
+- { "categoryId": 8, "categoryName": "other" } - everything else
 
-          Estimate for the image:
-          - productName: the most likely food name (string)
-          - categoryId: integer from the list above
-          - categoryName: string from the list above (exact match)
-          - quantity: integer, estimated visible items
-          - shelfLifeDays: integer, days the item typically lasts in a fridge for that category
+COUNTING INSTRUCTIONS:
+- Count ONLY individual items that are clearly visible and separate
+- For packaged items: count packages (e.g., 1 milk carton = 1, not individual servings)
+- For bunched items: count logical units (e.g., 1 bunch of bananas = quantity based on visible bananas)
+- For unclear quantities: estimate conservatively (default to 1 if uncertain)
+- Focus on items that look like they need individual expiration tracking
 
-          Respond ONLY with valid pure JSON in this format:
-       {
-         "productName": "...",
-         "categoryId": ...,
-         "categoryName": "...",
-         "quantity": ...,
-         "shelfLifeDays": ...
-    }
-         No markdown or explanation, just JSON.
-        `.trim();
+SHELF LIFE GUIDELINES (days from purchase):
+- Dairy: 5-14 days (milk 7, hard cheese 14, soft cheese 5)
+- Meat: 2-5 days (ground meat 2, steaks 3-5)
+- Vegetables: 3-14 days (leafy greens 3-5, root vegetables 7-14)
+- Fruits: 3-14 days (berries 3-5, apples 7-14, bananas 5-7)
+- Fish: 1-3 days (fresh fish 1-2, shellfish 1-3)
+- Beverages: 7-365 days (fresh juice 7, sodas 365)
+- Frozen: 30-365 days depending on item type
+
+RESPONSE FORMAT - Return ONLY valid JSON:
+{
+  "productName": "specific food name (e.g., 'Red Bell Peppers', 'Whole Milk')",
+  "categoryId": number,
+  "categoryName": "exact category from list",
+  "quantity": number,
+  "shelfLifeDays": number
+}
+
+Analyze the image step by step:
+1. Identify the main food item(s)
+2. Count visible individual items carefully
+3. Determine the most specific category
+4. Estimate realistic shelf life for that specific item type
+`.trim();
 
     const openAIResponse = await fetch(
       'https://api.openai.com/v1/chat/completions',
@@ -104,6 +117,7 @@ export const analyzeImageWithAI = async (
         },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
+          // model: 'gpt-4o', // use full model for accuracy
           messages: [
             {
               role: 'user',
@@ -111,13 +125,16 @@ export const analyzeImageWithAI = async (
                 { type: 'text', text: prompt },
                 {
                   type: 'image_url',
-                  image_url: { url: base64, detail: 'low' },
+                  image_url: {
+                    url: base64,
+                    detail: 'high', // Changed from 'low' to 'high' for better accuracy
+                  },
                 },
               ],
             },
           ],
           max_tokens: 300,
-          temperature: 0.1,
+          temperature: 0.0, // Changed from 0.1 to 0.0 for more consistent results
         }),
       }
     );
@@ -151,13 +168,29 @@ export const analyzeImageWithAI = async (
       }
     }
 
-    // Use fallback if missing values
+    // Validate and sanitize the results
     const categoryName =
       aiResult.categoryName && typeof aiResult.categoryName === 'string'
         ? aiResult.categoryName.toLowerCase()
         : 'other';
-    const shelfLife =
-      aiResult.shelfLifeDays || getDefaultShelfLife(categoryName);
+
+    // Improved shelf life logic with more specific defaults
+    let shelfLife = aiResult.shelfLifeDays;
+    if (!shelfLife || typeof shelfLife !== 'number' || shelfLife <= 0) {
+      shelfLife = getDefaultShelfLife(categoryName);
+    }
+
+    // Validate quantity - ensure it's reasonable
+    let quantity = aiResult.quantity;
+    if (
+      !quantity ||
+      typeof quantity !== 'number' ||
+      quantity <= 0 ||
+      quantity > 50
+    ) {
+      quantity = 1; // Default to 1 for unreasonable quantities
+    }
+
     const categoryId =
       aiResult.categoryId && typeof aiResult.categoryId === 'number'
         ? aiResult.categoryId
@@ -167,17 +200,14 @@ export const analyzeImageWithAI = async (
       productName: aiResult.productName || 'Unknown Product',
       categoryName,
       categoryId,
-      quantity:
-        typeof aiResult.quantity === 'number' && aiResult.quantity > 0
-          ? aiResult.quantity
-          : 1,
+      quantity: Math.round(quantity),
       expirationDate: calculateExpirationDate(shelfLife),
       confidence: 0.9,
     };
 
     return result;
   } catch (error) {
-    console.error('OpenAI Analysis error:', error);
+    console.log('AI Analysis error:', error);
     throw error;
   }
 };
