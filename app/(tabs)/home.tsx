@@ -1,5 +1,6 @@
 import ProductCard from '@/components/ProductCard';
 import QuickActions from '@/components/QuickActions';
+import { getUserDisplayName } from '@/constants/getUserDisplayName';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/contexts/ProductContext';
 import { useAlert } from '@/hooks/useCustomAlert';
@@ -29,7 +30,7 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const userName = user?.firstName || user?.email?.split('@')[0] || 'User';
+  const userName = getUserDisplayName(user);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

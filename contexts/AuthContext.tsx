@@ -1,4 +1,5 @@
 import {
+  resetPassword,
   signInWithEmail,
   signOut,
   signUpWithEmail,
@@ -26,6 +27,7 @@ interface AuthContextType {
     lastName?: string
   ) => Promise<AuthResult>;
   logout: () => Promise<AuthResult>;
+  resetPassword: (email: string) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -91,6 +93,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return result;
   };
 
+  const handleResetPassword = async (email: string): Promise<AuthResult> => {
+    setIsLoading(true);
+    const result = await resetPassword(email);
+    setIsLoading(false);
+    return result;
+  };
+
   const value: AuthContextType = {
     session,
     user: session?.user || null,
@@ -98,6 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signIn,
     signUp,
     logout,
+    resetPassword: handleResetPassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
