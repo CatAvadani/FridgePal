@@ -191,13 +191,44 @@ export default function HomeScreen() {
             expiringCount={expiringCount}
             expiredCount={expiredCount}
             onPress={(type) => {
-              // you can wire this later to navigate
+              // need to wire this later to navigate
               console.log(`Navigate to ${type} items`);
             }}
           />
         </View>
 
-        <View className='h-[1px] bg-gray-200 dark:bg-gray-800 rounded-full m-3' />
+        <View className='px-5 py-3'>
+          <View className='flex-row items-center justify-between mb-2'>
+            <Text className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+              Inventory Health
+            </Text>
+            <Text className='text-xs text-gray-500 dark:text-gray-400'>
+              {Math.round((freshCount / totalProducts) * 100) || 0}% fresh
+            </Text>
+          </View>
+          <View className='h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
+            <View className='flex-row h-full'>
+              <View
+                className='bg-green-500 h-full'
+                style={{
+                  width: `${totalProducts > 0 ? (freshCount / totalProducts) * 100 : 0}%`,
+                }}
+              />
+              <View
+                className='bg-primary h-full'
+                style={{
+                  width: `${totalProducts > 0 ? (expiringCount / totalProducts) * 100 : 0}%`,
+                }}
+              />
+              <View
+                className='bg-red-500 h-full'
+                style={{
+                  width: `${totalProducts > 0 ? (expiredCount / totalProducts) * 100 : 0}%`,
+                }}
+              />
+            </View>
+          </View>
+        </View>
 
         <QuickActions />
 
