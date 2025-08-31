@@ -6,7 +6,6 @@ export interface AuthResult {
   error?: string;
 }
 
-// Login with email and password
 export const signInWithEmail = async (
   email: string,
   password: string
@@ -15,12 +14,6 @@ export const signInWithEmail = async (
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
-    });
-
-    console.log(' Supabase sign in response:', {
-      user: data.user ? 'User found' : 'No user',
-      session: data.session ? 'Session created' : 'No session',
-      error: error ? error.message : 'No error',
     });
 
     if (error) {
@@ -82,12 +75,6 @@ export const signUpWithEmail = async (
           last_name: lastName,
         },
       },
-    });
-
-    console.log('Supabase registration response:', {
-      user: data.user ? 'User created' : 'No user',
-      session: data.session ? 'Session created' : 'No session',
-      error: error ? error.message : 'No error',
     });
 
     if (error) {
@@ -163,7 +150,7 @@ export const signOut = async (): Promise<AuthResult> => {
 export const resetPassword = async (email: string): Promise<AuthResult> => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'fridgepal://reset-password', // Deep link to your app
+      redirectTo: 'fridgepal://reset-password',
     });
 
     if (error) {
