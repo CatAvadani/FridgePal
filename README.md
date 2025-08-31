@@ -3,7 +3,7 @@
 **🏆 Clean Code Hackathon 2025 - First Place Winner 🏆**
 
 <div align="left">
-  <img src="assets/images/phones_1.png" alt="phone views of the app" width="510px"/>
+  <img src="assets/images/Fridge_pal_img.png" alt="phone views of the app" width="510px"/>
     <img src="assets/images/Welcome_screen.png" alt="phone views of the app" width="138px"/>
     <img src="assets/images/Login_img.png" alt="phone views of the app" width="137px"/>
 </div>
@@ -39,6 +39,7 @@ Say goodbye to forgotten leftovers and expired groceries. With FridgePal, you'll
 ## Architecture
 
 This is a full-stack mobile application featuring:
+
 - **Frontend**: React Native with Expo for cross-platform mobile development
 - **Backend**: Supabase for database, authentication, and file storage
 - **Notifications**: Smart notification system with background scheduling
@@ -58,6 +59,7 @@ EXPO_PUBLIC_OPENAI_API_KEY=your_openai_api_key
 ## Database Schema
 
 The app uses PostgreSQL via Supabase with user authentication and data isolation:
+
 - **products** - Food items with expiration tracking (user-specific)
 - **categories** - Food categories (fruits, vegetables, etc.)
 - **Storage bucket** - Product images with secure access
@@ -120,6 +122,7 @@ After running this command, you'll see a QR code and several options to run the 
 ### Option 1: Expo Go (Easiest for Testing)
 
 1. **Install Expo Go** on your phone:
+
    - [iOS App Store](https://apps.apple.com/app/expo-go/id982107779)
    - [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
 
@@ -151,12 +154,14 @@ eas build --profile development --platform android
 ## Features in Detail
 
 ### AI Food Recognition
+
 - Take a photo of food items
 - Automatic product name detection
 - Smart quantity estimation
 - Realistic expiration date calculation based on food type
 
 ### Inventory Management
+
 - Add products manually or via AI
 - Edit product details
 - Delete expired items
@@ -164,14 +169,16 @@ eas build --profile development --platform android
 - User-specific data isolation
 
 ### Notification System
+
 - Push notifications 3 days before food items expire
 - Customizable notification timing and preferences in Settings
-- Cross-platform support (iOS & Android) 
+- Cross-platform support (iOS & Android)
 - User-controlled enable/disable toggle
 - Background notification scheduling and management
 - Automatic rescheduling when products are updated
-  
+
 ### Data Storage
+
 - Real-time synchronization
 - Secure image storage
 - User authentication and session management
@@ -183,7 +190,7 @@ eas build --profile development --platform android
 # Start development server for Expo Go
 npm start
 
-# Start development server for development builds  
+# Start development server for development builds
 npx expo start --dev-client
 
 # Start with cache cleared
@@ -206,6 +213,7 @@ npm audit
 ## Development Notes
 
 ### Notifications
+
 - **iOS**: Full notification support in Expo Go and development builds
 - **Android**: Requires development build for notifications (Expo Go limitation in SDK 53+)
 - **Development build**: `eas build --profile development --platform android`
