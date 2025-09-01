@@ -42,7 +42,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // Silently handle session retrieval errors
+        console.log('Session retrieval failed:', error.message);
+      }
       console.log('Initial session:', session?.user?.email || 'none');
       setSession(session);
       setIsLoading(false);
