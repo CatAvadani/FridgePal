@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const { showAlert } = useAlert();
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const insets = useSafeAreaInsets();
 
   const userName = getUserDisplayName(user);
@@ -77,6 +78,19 @@ export default function HomeScreen() {
     (p) => p.daysUntilExpiry < 0
   ).length;
   const freshCount = totalProducts - expiringCount - expiredCount;
+
+  // % of items that are fresh
+  const freshnessRatio = useMemo(
+    () => (totalProducts > 0 ? freshCount / totalProducts : 0),
+    [freshCount, totalProducts]
+  );
+
+  // Dynamic fill color by health
+  const healthFillColor = useMemo(() => {
+    if (freshnessRatio >= 0.67) return '#10B981'; // green (good)
+    if (freshnessRatio >= 0.33) return '#F59E0B'; // amber (ok)
+    return '#EF4444'; // red (bad)
+  }, [freshnessRatio]);
 
   const handleDeleteProduct = async (
     product: ProductDisplay
@@ -216,12 +230,10 @@ export default function HomeScreen() {
               className='w-full h-full'
               resizeMode='cover'
             />
-            {/* Light overlay for better contrast */}
-            <View className='absolute inset-0 bg-black opacity-10' />
 
             <View className='absolute top-4 right-4'>
-              <View className='bg-green-400 bg-opacity-30 px-3 py-1 rounded-full'>
-                <Text className='text-black text-xs font-medium'>
+              <View className='bg-green-400/80 px-3 py-1 rounded-full'>
+                <Text className='text-black text-xs font-bold'>
                   Keep Your Food Fresh{' '}
                 </Text>
               </View>
@@ -247,52 +259,67 @@ export default function HomeScreen() {
               Inventory Health
             </Text>
             <Text className='text-xs text-gray-500 dark:text-gray-400'>
-              {Math.round((freshCount / totalProducts) * 100) || 0}% fresh
+              {totalProducts === 0
+                ? 'No items yet'
+                : `${Math.round(freshnessRatio * 100)}% fresh`}
             </Text>
           </View>
-          <View className='h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'>
-            <View className='flex-row h-full'>
-              <View
-                className='bg-green-500 h-full'
-                style={{
-                  width: `${totalProducts > 0 ? (freshCount / totalProducts) * 100 : 0}%`,
-                }}
-              />
-              <View
-                className='bg-primary h-full'
-                style={{
-                  width: `${totalProducts > 0 ? (expiringCount / totalProducts) * 100 : 0}%`,
-                }}
-              />
-              <View
-                className='bg-red-500 h-full'
-                style={{
-                  width: `${totalProducts > 0 ? (expiredCount / totalProducts) * 100 : 0}%`,
-                }}
-              />
-            </View>
+
+          <View
+            className='h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden'
+            accessibilityRole='progressbar'
+            accessibilityValue={{
+              now: Math.round(freshnessRatio * 100),
+              min: 0,
+              max: 100,
+            }}
+          >
+            <View
+              className='h-full'
+              style={{
+                width: `${freshnessRatio * 100}%`,
+                backgroundColor: healthFillColor,
+              }}
+            />
           </View>
         </View>
 
         <QuickActions />
 
-        <View className='px-4 mb-4'>
-          <View className='flex-row items-center bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2'>
-            <Feather name='search' size={18} color='#6B7280' />
+        {/* Search */}
+        <View className='px-4 mt-2 mb-4'>
+          <View
+            className={[
+              'rounded-xl flex-row items-center p-2 h-16',
+              'bg-white dark:bg-gray-800',
+              isSearchFocused
+                ? 'border border-gray-400 dark:border-gray-600'
+                : 'border border-gray-200 dark:border-gray-400',
+              'shadow-sm',
+            ].join(' ')}
+            style={{ elevation: 3 }}
+          >
+            <Feather
+              name='search'
+              size={20}
+              color={isSearchFocused ? '#6B7280' : '#9CA3AF'}
+            />
             <TextInput
               value={query}
               onChangeText={setQuery}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
               placeholder='Search by name or category'
               placeholderTextColor='#9CA3AF'
-              className='flex-1 ml-2 text-gray-900 dark:text-gray-100'
-              autoCorrect={false}
-              autoCapitalize='none'
               returnKeyType='search'
-              style={{ height: 35 }}
+              className='flex-1 ml-2 text-base text-gray-900 dark:text-white'
             />
-            {!!query && (
-              <TouchableOpacity onPress={() => setQuery('')}>
-                <Feather name='x' size={18} color='#6B7280' />
+            {query.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setQuery('')}
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+              >
+                <Feather name='x' size={18} color='#9CA3AF' />
               </TouchableOpacity>
             )}
           </View>
