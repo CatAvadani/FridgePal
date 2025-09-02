@@ -83,14 +83,8 @@ class NotificationManager {
   }
 
   async scheduleProductNotification(product: ProductDisplay): Promise<void> {
-    console.log('=== SCHEDULE FUNCTION CALLED ===', product.productName);
     try {
       const preferences = await this.getPreferences();
-
-      console.log('=== NOTIFICATION CALCULATION DEBUG ===');
-      console.log('Product expiration:', product.expirationDate);
-      console.log('Days before expiry:', preferences.daysBeforeExpiry);
-      console.log('Notification time:', preferences.notificationTime);
 
       if (!preferences.enabled) {
         console.log('Notifications disabled, skipping schedule');
@@ -103,19 +97,11 @@ class NotificationManager {
         preferences.notificationTime
       );
 
-      console.log(
-        'Calculated notification date:',
-        notificationDate.toLocaleString()
-      );
-      console.log('Current date:', new Date().toLocaleString());
-      console.log(
-        'Is notification date in future?',
-        notificationDate > new Date()
-      );
-      console.log('=======================================');
-
+      // Skip if notification date is in the past
       if (notificationDate <= new Date()) {
-        console.log('Notification date is in the past, skipping');
+        console.log(
+          `Notification date is in the past for ${product.productName}, skipping`
+        );
         return;
       }
 
@@ -124,8 +110,6 @@ class NotificationManager {
           notificationDate.getTime()) /
           (1000 * 60 * 60 * 24)
       );
-
-      console.log('Scheduling notification now...');
 
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -231,16 +215,20 @@ class NotificationManager {
     const [hours, minutes] = notificationTime.split(':');
     notificationDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
+    // Handle same-day notifications: if calculated time is in the past,
+    // schedule for 30 seconds from now instead of skipping entirely
+    if (daysBeforeExpiry === 0 && notificationDate <= new Date()) {
+      return new Date(Date.now() + 30 * 1000); // 30 seconds from now
+    }
+
     return notificationDate;
   }
 
   async getPreferences(): Promise<NotificationPreferences> {
-    const isProduction = !__DEV__;
-
     const defaultPreferences: NotificationPreferences = {
       enabled: true,
-      notificationTime: isProduction ? '09:00' : '09:00', // Can be customized via settings
-      daysBeforeExpiry: isProduction ? 3 : 0, // Immediate in dev for testing
+      notificationTime: '09:00',
+      daysBeforeExpiry: 3,
       version: 1,
     };
 
@@ -248,19 +236,6 @@ class NotificationManager {
       const stored = await AsyncStorage.getItem(PREFERENCES_KEY);
       if (stored) {
         const storedPrefs = JSON.parse(stored);
-
-        // In development, allow dynamic updates but preserve user changes
-        if (!isProduction && !storedPrefs.userModified) {
-          // Keep defaults fresh in development unless user explicitly changed them
-          const updatedPrefs = { ...defaultPreferences, ...storedPrefs };
-          await AsyncStorage.setItem(
-            PREFERENCES_KEY,
-            JSON.stringify(updatedPrefs)
-          );
-          return updatedPrefs;
-        }
-
-        // In production or if user modified, use stored preferences but ensure all properties exist
         return { ...defaultPreferences, ...storedPrefs };
       }
     } catch (error) {
@@ -312,6 +287,49 @@ class NotificationManager {
     } catch (error) {
       console.error('Failed to clear notifications:', error);
     }
+  }
+
+  // Keep these methods for debugging/admin purposes - they don't interfere with production
+  async testNotificationImmediately(): Promise<void> {
+    if (!__DEV__) return; // Only allow in development
+
+    console.log('=== TESTING IMMEDIATE NOTIFICATION ===');
+
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'FridgePal Test',
+          body: 'If you see this, notifications work!',
+          data: { type: 'test' },
+        },
+        trigger: {
+          type: 'date',
+          date: new Date(Date.now() + 3000), // 3 seconds from now
+        } as Notifications.DateTriggerInput,
+      });
+
+      console.log('Test notification scheduled for 3 seconds');
+    } catch (error) {
+      console.error('Test notification failed:', error);
+    }
+  }
+
+  async checkScheduledNotifications(): Promise<void> {
+    const scheduled = await this.getScheduledNotifications();
+    console.log(`Found ${scheduled.length} scheduled notifications:`);
+
+    scheduled.forEach((notif, index) => {
+      const trigger = notif.trigger as any;
+      let displayDate = 'Unknown date';
+
+      if (trigger.date) {
+        displayDate = new Date(trigger.date).toLocaleString();
+      } else if (trigger.dateComponents) {
+        displayDate = new Date(trigger.dateComponents).toLocaleString();
+      }
+
+      console.log(`${index + 1}. ${notif.content.title} - ${displayDate}`);
+    });
   }
 }
 

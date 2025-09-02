@@ -18,7 +18,7 @@ const QuickActions = () => {
     <View className='px-2 mb-2'>
       <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700/20'>
         <TouchableOpacity
-          className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
+          className='flex-1 flex-row items-center bg-gray-200 p-4 rounded-xl shadow-sm dark:bg-gray-800'
           onPress={handleAddProduct}
           style={{ elevation: 3 }}
         >
@@ -36,7 +36,7 @@ const QuickActions = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className='flex-1 flex-row items-center bg-white p-4 rounded-xl shadow-sm dark:bg-gray-800'
+          className='flex-1 flex-row items-center bg-primary p-4 rounded-xl shadow-sm dark:bg-gray-800'
           onPress={handleTakePhoto}
           style={{ elevation: 3 }}
         >
@@ -44,7 +44,7 @@ const QuickActions = () => {
             <MaterialIcons name='camera-alt' size={20} color='#ff5733' />
           </View>
           <View className='flex-1'>
-            <Text className='text-base font-bold text-gray-800 dark:text-white'>
+            <Text className='text-base font-bold text-gray-200 dark:text-white'>
               Take Photo
             </Text>
           </View>
