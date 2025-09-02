@@ -1,7 +1,11 @@
 import { AIAnalysisResult } from '@/types/interfaces';
 import { formatProductName } from '@/utils/formatProductName';
+import Constants from 'expo-constants';
 
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+// const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+const openaiApiKey =
+  Constants.expoConfig?.extra?.openaiApiKey ||
+  process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
 // Fallback: Return shelf life in days by category
 const getDefaultShelfLife = (categoryName: string) => {
@@ -51,7 +55,7 @@ export const analyzeImageWithAI = async (
   imageUri: string
 ): Promise<AIAnalysisResult> => {
   try {
-    if (!OPENAI_API_KEY) throw new Error('OpenAI API key not configured');
+    if (!openaiApiKey) throw new Error('OpenAI API key not configured');
 
     // Convert image to base64 for React Native
     const response = await fetch(imageUri);
@@ -114,7 +118,7 @@ Analyze the image step by step:
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          Authorization: `Bearer ${openaiApiKey}`,
         },
         body: JSON.stringify({
           model: 'gpt-4o-mini',

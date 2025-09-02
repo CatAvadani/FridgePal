@@ -65,7 +65,10 @@
       "router": {},
       "eas": {
         "projectId": "f14aa93e-7e55-4f85-8073-7b09b2e47e53"
-      }
+      },
+      "supabaseUrl": "your_supabase_url_here",
+      "supabaseAnonKey": "your_supabase_anon_key_here",
+      "openaiApiKey": "your_openai_api_key_here"
     }
   }
 }
