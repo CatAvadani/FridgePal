@@ -35,7 +35,7 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <SafeAreaView className='flex-1 bg-white'>
+    <SafeAreaView className='flex-1 bg-white dark:bg-slate-900'>
       <View className='flex-1 justify-center items-center px-8'>
         <View className='items-center mb-16'>
           <View className='w-72 h-72 rounded-full overflow-hidden mb-8 shadow-lg'>
@@ -46,15 +46,15 @@ export default function WelcomeScreen() {
             />
           </View>
 
-          <Text className='text-4xl font-bold text-gray-900 mb-4'>
+          <Text className='text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4'>
             FridgePal
           </Text>
 
-          <Text className='text-2xl font-medium text-gray-800 mb-2'>
+          <Text className='text-2xl font-medium text-gray-800 dark:text-gray-200 mb-2'>
             Your Smart Fridge Companion
           </Text>
 
-          <Text className='text-base text-gray-600 text-center leading-6'>
+          <Text className='text-base text-gray-600 dark:text-gray-400 text-center leading-6'>
             Scan and track your groceries effortlessly
           </Text>
         </View>

@@ -118,7 +118,7 @@ export default function AuthInput({
           ref={inputRef}
           className={`
             w-full ${icon ? 'pl-12' : 'px-4'} ${showPasswordToggle ? 'pr-12' : 'pr-4'} py-4 
-            border rounded-xl bg-white text-gray-900
+            border rounded-xl bg-white text-gray-800 dark:bg-gray-800 dark:text-white dark:border-gray-600
             ${error ? 'border-red-500' : 'border-gray-200 focus:border-primary'}
           `}
           placeholder={placeholder}

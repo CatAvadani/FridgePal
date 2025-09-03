@@ -167,6 +167,36 @@ export default function HomeScreen() {
 
   const renderListHeader = () => (
     <View>
+      {/* Background Image */}
+      <View className='relative mb-4'>
+        <View className='h-48 mx-4 rounded-xl overflow-hidden'>
+          <Image
+            source={require('@/assets/images/Fridge_image.webp')}
+            className='w-full h-full'
+            resizeMode='cover'
+          />
+          <View className='absolute top-4 right-4'>
+            <View className='bg-green-400/80 px-3 py-1 rounded-full'>
+              <Text className='text-black text-xs font-bold'>
+                Keep Your Food Fresh{' '}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Stats Summary Card */}
+      <View className='px-5 -mt-8 mb-4'>
+        <StatsSummaryCard
+          freshCount={freshCount}
+          expiringCount={expiringCount}
+          expiredCount={expiredCount}
+          onPress={(type) => {
+            console.log(`Navigate to ${type} items`);
+          }}
+        />
+      </View>
+
       {/* Health Progress */}
       <View className='px-5 py-3'>
         <View className='flex-row items-center justify-between mb-2'>
@@ -285,96 +315,64 @@ export default function HomeScreen() {
         translucent={true}
       />
 
-      {/* Fixed Header Section - Only Header + Image */}
-      <View>
-        {/* Header */}
-        <View className='flex-row items-center justify-between m-4'>
-          <View className='flex-row items-center'>
-            <View className='w-10 h-10 bg-primary rounded-full mr-3 justify-center items-center'>
-              <Text className='text-white font-bold'>{userName.charAt(0)}</Text>
-            </View>
-            <View>
-              <Text className='text-2xl font-bold text-gray-800 dark:text-white'>
-                FridgePal
-              </Text>
-              <Text className='text-sm text-gray-500 dark:text-gray-400'>
-                Welcome, {userName}!
-              </Text>
-            </View>
+      {/* Fixed Header Section - Only App Header */}
+      <View className='flex-row items-center justify-between m-4'>
+        <View className='flex-row items-center'>
+          <View className='w-10 h-10 bg-primary rounded-full mr-3 justify-center items-center'>
+            <Text className='text-white font-bold'>{userName.charAt(0)}</Text>
           </View>
-
-          <View className='flex-row items-center'>
-            {hasAlerts && (
-              <View style={{ position: 'relative', marginRight: 12 }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    showAlert({
-                      title: `${expiringCount} Items Expiring Soon`,
-                      message:
-                        filteredExpiring
-                          .slice(0, 3)
-                          .map((p) => p.productName)
-                          .join(', ') + (expiringCount > 3 ? '...' : ''),
-                      buttons: [
-                        {
-                          text: 'View All',
-                          onPress: () =>
-                            router.push('/inventory?filter=expiring'),
-                        },
-                        { text: 'OK', style: 'cancel' },
-                      ],
-                    });
-                  }}
-                  accessibilityRole='button'
-                  accessibilityLabel='Notifications'
-                >
-                  <Feather name='bell' size={24} color='#6B7280' />
-                </TouchableOpacity>
-                <View style={notificationDotStyle} />
-              </View>
-            )}
-
-            <TouchableOpacity
-              onPress={handleLogout}
-              accessibilityRole='button'
-              accessibilityLabel='Logout'
-            >
-              <Feather name='power' size={22} color='#ef4444' />
-            </TouchableOpacity>
+          <View>
+            <Text className='text-2xl font-bold text-gray-800 dark:text-white'>
+              FridgePal
+            </Text>
+            <Text className='text-sm text-gray-500 dark:text-gray-400'>
+              Welcome, {userName}!
+            </Text>
           </View>
         </View>
 
-        {/* Background Image */}
-        <View className='relative'>
-          <View className='h-48 mx-4 rounded-xl overflow-hidden'>
-            <Image
-              source={require('@/assets/images/Fridge_image.webp')}
-              className='w-full h-full'
-              resizeMode='cover'
-            />
-            <View className='absolute top-4 right-4'>
-              <View className='bg-green-400/80 px-3 py-1 rounded-full'>
-                <Text className='text-black text-xs font-bold'>
-                  Keep Your Food Fresh{' '}
-                </Text>
-              </View>
+        <View className='flex-row items-center'>
+          {hasAlerts && (
+            <View style={{ position: 'relative', marginRight: 12 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  showAlert({
+                    title: `${expiringCount} Items Expiring Soon`,
+                    message:
+                      filteredExpiring
+                        .slice(0, 3)
+                        .map((p) => p.productName)
+                        .join(', ') + (expiringCount > 3 ? '...' : ''),
+                    buttons: [
+                      {
+                        text: 'View All',
+                        onPress: () =>
+                          router.push('/inventory?filter=expiring'),
+                      },
+                      { text: 'OK', style: 'cancel' },
+                    ],
+                  });
+                }}
+                accessibilityRole='button'
+                accessibilityLabel='Notifications'
+              >
+                <Feather name='bell' size={24} color='#6B7280' />
+              </TouchableOpacity>
+              <View style={notificationDotStyle} />
             </View>
-          </View>
+          )}
+
+          <TouchableOpacity
+            onPress={handleLogout}
+            accessibilityRole='button'
+            accessibilityLabel='Logout'
+          >
+            <Feather name='power' size={22} color='#ef4444' />
+          </TouchableOpacity>
         </View>
       </View>
 
-      <View className='px-5 -mt-8 '>
-        <StatsSummaryCard
-          freshCount={freshCount}
-          expiringCount={expiringCount}
-          expiredCount={expiredCount}
-          onPress={(type) => {
-            console.log(`Navigate to ${type} items`);
-          }}
-        />
-      </View>
-
-      {/* Scrollable Content -  Health, QuickActions, Search, and Products */}
+      {/* Scrollable Content - Image, Stats, Health, QuickActions, Search, and Products */}
       <FlatList
         data={filteredExpiring}
         keyExtractor={(item) => item.itemId}

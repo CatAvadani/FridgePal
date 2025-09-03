@@ -16,9 +16,9 @@ const QuickActions = () => {
 
   return (
     <View className='px-2 mb-2'>
-      <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700/20'>
+      <View className='flex-row gap-2 bg-gray-100 p-2 rounded-xl dark:bg-gray-700/40'>
         <TouchableOpacity
-          className='flex-1 flex-row items-center bg-gray-200 p-4 rounded-xl shadow-sm dark:bg-gray-800'
+          className='flex-1 flex-row items-center bg-gray-200 p-4 rounded-xl shadow-sm dark:bg-gray-600/60'
           onPress={handleAddProduct}
           style={{ elevation: 3 }}
         >
@@ -29,24 +29,22 @@ const QuickActions = () => {
             <MaterialIcons name='add' size={20} color='#ff5733' />
           </View>
           <View className='flex-1'>
-            <Text className='text-base  font-bold text-gray-800 dark:text-white'>
+            <Text className='text-lg  font-bold text-gray-800 dark:text-white'>
               Add Product
             </Text>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className='flex-1 flex-row items-center bg-primary p-4 rounded-xl shadow-sm dark:bg-gray-800'
+          className='flex-1 flex-row items-center bg-primary p-4 rounded-xl shadow-sm '
           onPress={handleTakePhoto}
           style={{ elevation: 3 }}
         >
-          <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800'>
+          <View className='w-10 h-10 justify-center items-center bg-gray-100 rounded-lg mr-3 dark:bg-slate-800/70'>
             <MaterialIcons name='camera-alt' size={20} color='#ff5733' />
           </View>
           <View className='flex-1'>
-            <Text className='text-base font-bold text-gray-200 dark:text-white'>
-              Take Photo
-            </Text>
+            <Text className='text-lg font-bold text-white'>Take Photo</Text>
           </View>
         </TouchableOpacity>
       </View>
