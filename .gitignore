@@ -34,7 +34,28 @@ yarn-error.*
 .env*.local
 .env
 
+# Supabase CLI artifacts
+supabase/.temp/
+supabase/.branches/
+.supabase/
+
+# Edge Functions noise
+supabase/functions/**/.npmrc
+supabase/functions/**/node_modules
+supabase/functions/**/dist
+
 # typescript
 *.tsbuildinfo
 
 app-example
+
+# Expo / React Native 
+.expo
+.expo-shared
+android/
+ios/
+**/build/
+*.keystore
+*.jks
+*.apk
+*.aab
