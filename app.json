@@ -7,6 +7,13 @@
     "scheme": "fridgepal",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "androidStatusBar": {
+      "backgroundColor": "#000000",
+      "translucent": true
+    },
+    "androidNavigationBar": {
+      "visible": "immersive"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.catalinaava.FridgePal"
@@ -23,9 +30,7 @@
         "backgroundColor": "#ffcdc2"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": [
-        "android.permission.CAMERA"
-      ],
+      "permissions": ["android.permission.CAMERA"],
       "package": "com.catalinaava.FridgePal"
     },
     "web": {

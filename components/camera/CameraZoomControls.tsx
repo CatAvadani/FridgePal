@@ -1,17 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface CameraZoomControlsProps {
   zoom: number;
-  onZoomChange: (value: number) => void;
   showZoomSlider?: boolean;
 }
 
-export default function CameraZoomControls({
-  zoom,
-  onZoomChange,
-  showZoomSlider,
-}: CameraZoomControlsProps) {
+export default function CameraZoomControls({ zoom }: CameraZoomControlsProps) {
   return (
     <>
       {zoom > 0 && (
@@ -19,56 +14,6 @@ export default function CameraZoomControls({
           <Text style={styles.zoomText}>{(1 + zoom * 4).toFixed(1)}x</Text>
         </View>
       )}
-
-      {showZoomSlider && (
-        <View style={styles.zoomSliderContainer}>
-          <View style={styles.zoomSliderTrack}>
-            <View
-              style={[styles.zoomSliderFill, { width: `${zoom * 100}%` }]}
-            />
-            <View
-              style={[styles.zoomSliderThumb, { left: `${zoom * 100}%` }]}
-            />
-          </View>
-          <View style={styles.zoomLabels}>
-            <Text style={styles.zoomLabel}>1x</Text>
-            <Text style={styles.zoomLabel}>5x</Text>
-          </View>
-        </View>
-      )}
-
-      <View style={styles.zoomButtonsContainer}>
-        <TouchableOpacity
-          style={styles.zoomButton}
-          onPress={() => onZoomChange(0)}
-        >
-          <Text
-            style={[styles.zoomButtonText, zoom === 0 && styles.activeZoom]}
-          >
-            1x
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.zoomButton}
-          onPress={() => onZoomChange(0.5)}
-        >
-          <Text
-            style={[styles.zoomButtonText, zoom === 0.5 && styles.activeZoom]}
-          >
-            3x
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.zoomButton}
-          onPress={() => onZoomChange(1)}
-        >
-          <Text
-            style={[styles.zoomButtonText, zoom === 1 && styles.activeZoom]}
-          >
-            5x
-          </Text>
-        </TouchableOpacity>
-      </View>
     </>
   );
 }

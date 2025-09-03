@@ -30,9 +30,6 @@ interface CameraHeaderProps {
 export const CameraHeader = ({ onClose }: CameraHeaderProps) => (
   <View style={styles.header}>
     <TouchableOpacity style={styles.glassButton} onPress={onClose}>
-      <Feather name='arrow-left' size={24} color='white' />
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.glassButton} onPress={onClose}>
       <Feather name='x' size={24} color='white' />
     </TouchableOpacity>
   </View>
@@ -55,21 +52,15 @@ export const CameraFrameOverlay = () => (
 );
 
 interface CameraControlsProps {
-  onFlip: () => void;
   onCapture: () => void;
   isAnalyzing: boolean;
 }
 
 export const CameraControls = ({
-  onFlip,
   onCapture,
   isAnalyzing,
 }: CameraControlsProps) => (
   <View style={styles.bottomControls}>
-    <TouchableOpacity onPress={onFlip} style={styles.flipButton}>
-      <Feather name='refresh-ccw' size={24} color='black' />
-    </TouchableOpacity>
-
     <TouchableOpacity
       onPress={onCapture}
       style={[
@@ -86,8 +77,6 @@ export const CameraControls = ({
         )}
       </View>
     </TouchableOpacity>
-
-    <View style={{ width: 36 }} />
   </View>
 );
 
@@ -118,7 +107,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
@@ -165,7 +154,7 @@ const styles = StyleSheet.create({
   },
   frameCornerTopLeft: {
     position: 'absolute',
-    top: '30%',
+    top: '20%',
     left: '15%',
     width: 50,
     height: 50,
@@ -175,7 +164,7 @@ const styles = StyleSheet.create({
   },
   frameCornerTopRight: {
     position: 'absolute',
-    top: '30%',
+    top: '20%',
     right: '15%',
     width: 50,
     height: 50,
@@ -185,7 +174,7 @@ const styles = StyleSheet.create({
   },
   frameCornerBottomLeft: {
     position: 'absolute',
-    bottom: '30%',
+    bottom: '40%',
     left: '15%',
     width: 50,
     height: 50,
@@ -195,7 +184,7 @@ const styles = StyleSheet.create({
   },
   frameCornerBottomRight: {
     position: 'absolute',
-    bottom: '30%',
+    bottom: '40%',
     right: '15%',
     width: 50,
     height: 50,
@@ -204,20 +193,16 @@ const styles = StyleSheet.create({
     borderColor: 'white',
   },
   bottomControls: {
+    position: 'absolute',
+    bottom: 120,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingVertical: 20,
-  },
-  flipButton: {
-    width: 36,
-    height: 36,
-    backgroundColor: 'white',
-    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 40,
   },
+
   captureButton: {
     width: 70,
     height: 70,

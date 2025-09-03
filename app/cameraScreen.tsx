@@ -5,14 +5,14 @@ import {
   CameraHeader,
   PermissionRequest,
 } from '@/components/camera/CameraComponents';
-import CameraZoomControls from '@/components/camera/CameraZoomControls';
 import { useAlert } from '@/hooks/useCustomAlert';
 import { analyzeImageWithAI } from '@/services/openaiAnalysisService';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useRef, useState } from 'react';
-import { PanResponder, Platform, StyleSheet, View } from 'react-native';
+import { PanResponder, Platform, StyleSheet, Text, View } from 'react-native';
 
 // Constants
 const ZOOM_SENSITIVITY = 200;
@@ -21,9 +21,8 @@ const PHOTO_QUALITY = 0.8;
 
 export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [facing, setFacing] = useState<'back' | 'front'>('back');
   const [zoom, setZoom] = useState(0);
-  const [showZoomSlider, setShowZoomSlider] = useState(false);
+  const [showZoomIndicator, setShowZoomIndicator] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
@@ -40,7 +39,7 @@ export default function CameraScreen() {
         evt.nativeEvent.touches.length === 2,
       onMoveShouldSetPanResponder: (evt) =>
         evt.nativeEvent.touches.length === 2,
-      onPanResponderGrant: () => setShowZoomSlider(true),
+      onPanResponderGrant: () => setShowZoomIndicator(true),
       onPanResponderMove: (evt) => {
         if (evt.nativeEvent.touches.length === 2) {
           const [touch1, touch2] = evt.nativeEvent.touches;
@@ -56,7 +55,7 @@ export default function CameraScreen() {
         }
       },
       onPanResponderRelease: () => {
-        setTimeout(() => setShowZoomSlider(false), ZOOM_HIDE_DELAY);
+        setTimeout(() => setShowZoomIndicator(false), ZOOM_HIDE_DELAY);
       },
       onShouldBlockNativeResponder: () => true,
     })
@@ -65,9 +64,6 @@ export default function CameraScreen() {
   if (!permission) return <View style={styles.container} />;
   if (!permission.granted)
     return <PermissionRequest onRequest={requestPermission} />;
-
-  const toggleCamera = () =>
-    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
 
   const processImageForAndroid = async (
     originalUri: string
@@ -164,12 +160,6 @@ export default function CameraScreen() {
     });
   };
 
-  const handleZoomChange = (value: number) => {
-    setZoom(value);
-    setShowZoomSlider(true);
-    setTimeout(() => setShowZoomSlider(false), ZOOM_HIDE_DELAY);
-  };
-
   const handleBack = () => {
     if (isFromTakePhoto) {
       router.replace('/');
@@ -180,10 +170,11 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style='light' translucent={true} />
       <CameraView
         ref={cameraRef}
         style={StyleSheet.absoluteFillObject}
-        facing={facing}
+        facing='back'
         zoom={zoom}
       />
 
@@ -194,17 +185,14 @@ export default function CameraScreen() {
 
         <CameraFrameOverlay />
 
-        <CameraZoomControls
-          zoom={zoom}
-          onZoomChange={handleZoomChange}
-          showZoomSlider={showZoomSlider}
-        />
+        {/* Zoom indicator - shows when pinching */}
+        {showZoomIndicator && zoom > 0 && (
+          <View style={styles.zoomIndicator}>
+            <Text style={styles.zoomText}>{(1 + zoom * 4).toFixed(1)}x</Text>
+          </View>
+        )}
 
-        <CameraControls
-          onFlip={toggleCamera}
-          onCapture={handleSnap}
-          isAnalyzing={isAnalyzing}
-        />
+        <CameraControls onCapture={handleSnap} isAnalyzing={isAnalyzing} />
       </View>
     </View>
   );
@@ -214,5 +202,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'black',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  zoomIndicator: {
+    position: 'absolute',
+    top: 120,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  zoomText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
