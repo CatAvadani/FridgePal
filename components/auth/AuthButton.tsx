@@ -31,13 +31,13 @@ export default function AuthButton({
   const buttonStyle =
     variant === 'primary'
       ? `w-full py-3 rounded-xl mb-2 flex-row items-center justify-center ${
-          isDisabled ? 'bg-gray-200' : 'bg-primary'
+          isDisabled ? 'bg-gray-200 dark:bg-gray-600' : 'bg-primary'
         }`
       : 'w-full py-4 rounded-xl border border-gray-200 bg-white mb-6 flex-row items-center justify-center';
 
   const textStyle =
     variant === 'primary'
-      ? `font-semibold text-lg ${isDisabled ? 'text-gray-500' : 'text-white'}`
+      ? `font-semibold text-lg ${isDisabled ? 'text-gray-500 dark:text-gray-300' : 'text-white'}`
       : 'text-gray-700 font-medium text-lg text-center';
 
   return (
