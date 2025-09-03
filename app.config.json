@@ -23,7 +23,9 @@
         "backgroundColor": "#ffcdc2"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": ["android.permission.CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
       "package": "com.catalinaava.FridgePal"
     },
     "web": {
@@ -56,7 +58,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffeeeb"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
