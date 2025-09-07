@@ -111,7 +111,7 @@ export const signUpWithEmail = async (
       message: 'Registration completed, please try signing in.',
     };
   } catch (error) {
-    console.error('Registration failed:', error);
+    console.log('Registration failed:', error);
     return {
       success: false,
       message: 'An unexpected error occurred',

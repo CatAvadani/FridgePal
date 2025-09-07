@@ -140,7 +140,7 @@ export default function HomeScreen() {
               console.log('Logout successful, navigating to login');
               router.replace('/login');
             } catch (error) {
-              console.error('Logout error:', error);
+              console.log('Logout error:', error);
               Alert.alert('Logout Failed', 'Please try again.');
             }
           },

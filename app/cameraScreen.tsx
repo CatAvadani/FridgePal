@@ -84,7 +84,7 @@ export default function CameraScreen() {
 
       return processedUri;
     } catch (error) {
-      console.error('Error processing image for Android:', error);
+      console.log('Error processing image for Android:', error);
       return originalUri;
     }
   };
@@ -114,7 +114,7 @@ export default function CameraScreen() {
         navigateToAddProduct(usableUri, { fromCamera: 'true' });
       }
     } catch (error) {
-      console.error('Camera snap error:', error);
+      console.log('Camera snap error:', error);
       showAlert({
         title: 'Error',
         message: 'Failed to take picture. Please try again.',
@@ -136,7 +136,7 @@ export default function CameraScreen() {
         expirationDate: analysisResult.expirationDate,
       });
     } catch (error) {
-      console.error('AI Analysis error:', error);
+      console.log('AI Analysis error:', error);
 
       showAlert({
         title: 'Analysis Failed',

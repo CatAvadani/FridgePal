@@ -59,7 +59,7 @@ class NotificationManager {
       console.log('Notification manager initialized successfully');
       return true;
     } catch (error) {
-      console.error('Failed to initialize notification manager:', error);
+      console.log('Failed to initialize notification manager:', error);
       return false;
     }
   }
@@ -77,7 +77,7 @@ class NotificationManager {
 
       return finalStatus === 'granted';
     } catch (error) {
-      console.error('Permission request failed:', error);
+      console.log('Permission request failed:', error);
       return false;
     }
   }
@@ -132,7 +132,7 @@ class NotificationManager {
         `Scheduled notification for ${product.productName} at ${notificationDate.toLocaleString()}`
       );
     } catch (error) {
-      console.error('Failed to schedule notification:', error);
+      console.log('Failed to schedule notification:', error);
     }
   }
 
@@ -153,7 +153,7 @@ class NotificationManager {
         `Cancelled ${productNotifications.length} notifications for product ${productId}`
       );
     } catch (error) {
-      console.error('Failed to cancel notifications:', error);
+      console.log('Failed to cancel notifications:', error);
     }
   }
 
@@ -173,7 +173,7 @@ class NotificationManager {
       await this.scheduleAllProductNotifications(products);
       console.log('All notifications rescheduled');
     } catch (error) {
-      console.error('Failed to reschedule notifications:', error);
+      console.log('Failed to reschedule notifications:', error);
     }
   }
 
@@ -189,7 +189,7 @@ class NotificationManager {
         });
       }
     } catch (error) {
-      console.error('Failed to register background task:', error);
+      console.log('Failed to register background task:', error);
     }
   }
 
@@ -198,7 +198,7 @@ class NotificationManager {
       console.log('Running background notification check...');
       // TODO: Implement background sync with your product data
     } catch (error) {
-      console.error('Background check failed:', error);
+      console.log('Background check failed:', error);
     }
   }
 
@@ -239,7 +239,7 @@ class NotificationManager {
         return { ...defaultPreferences, ...storedPrefs };
       }
     } catch (error) {
-      console.error('Failed to get preferences:', error);
+      console.log('Failed to get preferences:', error);
     }
 
     // Save and return defaults
@@ -263,7 +263,7 @@ class NotificationManager {
       await AsyncStorage.setItem(PREFERENCES_KEY, JSON.stringify(updated));
       console.log('Preferences updated:', updated);
     } catch (error) {
-      console.error('Failed to update preferences:', error);
+      console.log('Failed to update preferences:', error);
     }
   }
 
@@ -275,7 +275,7 @@ class NotificationManager {
       console.log(`Found ${scheduled.length} scheduled notifications`);
       return scheduled;
     } catch (error) {
-      console.error('Failed to get scheduled notifications:', error);
+      console.log('Failed to get scheduled notifications:', error);
       return [];
     }
   }
@@ -285,7 +285,7 @@ class NotificationManager {
       await Notifications.cancelAllScheduledNotificationsAsync();
       console.log('All notifications cleared');
     } catch (error) {
-      console.error('Failed to clear notifications:', error);
+      console.log('Failed to clear notifications:', error);
     }
   }
 
@@ -310,7 +310,7 @@ class NotificationManager {
 
       console.log('Test notification scheduled for 3 seconds');
     } catch (error) {
-      console.error('Test notification failed:', error);
+      console.log('Test notification failed:', error);
     }
   }
 

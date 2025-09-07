@@ -104,7 +104,7 @@ export default function RegisterScreen() {
         Alert.alert('Registration Failed', errorMessage);
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.log('Registration error:', error);
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);

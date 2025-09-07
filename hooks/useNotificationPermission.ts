@@ -61,7 +61,7 @@ export const useNotificationPermission = () => {
         hasAskedBefore: hasAskedBefore === 'true',
       });
     } catch (error) {
-      console.error('Error checking permission status:', error);
+      console.log('Error checking permission status:', error);
     }
   };
 
@@ -96,7 +96,7 @@ export const useNotificationPermission = () => {
 
       return granted;
     } catch (error) {
-      console.error('Error requesting permission:', error);
+      console.log('Error requesting permission:', error);
       return false;
     }
   };
@@ -109,7 +109,7 @@ export const useNotificationPermission = () => {
         await Linking.openSettings();
       }
     } catch (error) {
-      console.error('Error opening settings:', error);
+      console.log('Error opening settings:', error);
     }
   };
 
@@ -145,7 +145,7 @@ export const useNotificationPermission = () => {
         await notificationManager.updatePreferences({ enabled: true });
       }
     } catch (error) {
-      console.error('Error rechecking permissions:', error);
+      console.log('Error rechecking permissions:', error);
     }
   };
 

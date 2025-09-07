@@ -20,7 +20,7 @@ export const getProducts = async (): Promise<ProductDisplay[]> => {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error('User not authenticated:', userError);
+      console.log('User not authenticated:', userError);
       throw new Error('User not authenticated');
     }
 
@@ -48,7 +48,7 @@ export const getProducts = async (): Promise<ProductDisplay[]> => {
     const products: Product[] = data.map(mapSupabaseProductToProduct);
     return products.map(convertToProductDisplay);
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.log('Error fetching products:', error);
     throw error;
   }
 };
@@ -65,7 +65,7 @@ export const createProduct = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error('User not authenticated:', userError);
+      console.log('User not authenticated:', userError);
       throw new Error('User not authenticated');
     }
 
@@ -103,7 +103,7 @@ export const createProduct = async (
     const product: Product = mapSupabaseProductToProduct(data);
     return convertToProductDisplay(product);
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.log('Error creating product:', error);
     throw error;
   }
 };
@@ -121,7 +121,7 @@ export const updateProduct = async (
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error(' User not authenticated:', userError);
+      console.log('User not authenticated:', userError);
       throw new Error('User not authenticated');
     }
 
@@ -167,7 +167,7 @@ export const updateProduct = async (
     const product: Product = mapSupabaseProductToProduct(data);
     return convertToProductDisplay(product);
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.log('Error updating product:', error);
     throw error;
   }
 };
@@ -181,7 +181,7 @@ export const deleteProduct = async (itemId: string): Promise<void> => {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error('User not authenticated:', userError);
+      console.log('User not authenticated:', userError);
       throw new Error('User not authenticated');
     }
 
@@ -196,7 +196,7 @@ export const deleteProduct = async (itemId: string): Promise<void> => {
       .single();
 
     if (fetchError)
-      console.error('Error fetching product for deletion:', fetchError);
+      console.log('Error fetching product for deletion:', fetchError);
 
     // Delete image from storage if it exists
     if (product?.image_url) {
@@ -231,7 +231,7 @@ export const deleteProduct = async (itemId: string): Promise<void> => {
 
     console.log('Product deleted from database');
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.log('Error deleting product:', error);
     throw error;
   }
 };
@@ -275,7 +275,7 @@ const uploadImage = async (imageUri: string): Promise<string> => {
     const publicUrl = `${supabaseUrl}/storage/v1/object/public/${PRODUCT_IMAGES_BUCKET}/${fileName}`;
     return publicUrl;
   } catch (error) {
-    console.error('Error uploading image:', error);
+    console.log('Error uploading image:', error);
     throw error;
   }
 };

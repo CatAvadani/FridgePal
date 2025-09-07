@@ -23,7 +23,7 @@ const AboutScreen = () => {
     try {
       await Linking.openURL(url);
     } catch (error) {
-      console.error('Failed to open link:', error);
+      console.log('Failed to open link:', error);
     }
   };
 

@@ -57,7 +57,7 @@ export default function ProductProvider({ children }: PropsWithChildren) {
       const data = await getProducts();
       setProducts(data);
     } catch (error) {
-      console.error('[ProductContext] fetchProducts error:', error);
+      console.log('[ProductContext] fetchProducts error:', error);
       setError('Failed to fetch products. Please try again.');
       setProducts([]);
       setLoading(false);
@@ -89,7 +89,7 @@ export default function ProductProvider({ children }: PropsWithChildren) {
 
         await fetchProducts();
       } catch (error) {
-        console.error('[ProductContext] addProduct error:', error);
+        console.log('[ProductContext] addProduct error:', error);
         setError('Failed to add product. Please try again.');
         throw error;
       } finally {
@@ -133,7 +133,7 @@ export default function ProductProvider({ children }: PropsWithChildren) {
         const refreshedProducts = await getProducts();
         setProducts(refreshedProducts);
       } catch (error) {
-        console.error('[ProductContext] updateProduct error:', error);
+        console.log('[ProductContext] updateProduct error:', error);
         setError('Failed to update product.');
         throw error;
       } finally {
@@ -166,7 +166,7 @@ export default function ProductProvider({ children }: PropsWithChildren) {
           prev.filter((product) => product.itemId !== itemId)
         );
       } catch (error) {
-        console.error('[ProductContext] deleteProduct error:', error);
+        console.log('[ProductContext] deleteProduct error:', error);
         setError('Failed to delete product. Please try again.');
         throw error;
       } finally {

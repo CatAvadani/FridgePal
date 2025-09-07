@@ -89,7 +89,7 @@ export default function LoginScreen() {
         showAlert('Sign In Failed', errorMessage);
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.log('Login error:', error);
       showAlert('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);

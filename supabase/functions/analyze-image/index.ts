@@ -213,7 +213,7 @@ Analyze the image step by step:
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {
-    console.error('AI Analysis error:', error);
+    console.log('AI Analysis error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -121,7 +121,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
       console.log('Notifications initialized:', initialized);
     } catch (error) {
-      console.error('Error initializing notifications:', error);
+      console.log('Error initializing notifications:', error);
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +149,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         }
       }
     } catch (error) {
-      console.error('Error rechecking permissions:', error);
+      console.log('Error rechecking permissions:', error);
     }
   };
 
@@ -163,7 +163,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       setHasPermissions(granted);
       return granted;
     } catch (error) {
-      console.error('Error requesting notification permissions:', error);
+      console.log('Error requesting notification permissions:', error);
       return false;
     }
   };
@@ -178,7 +178,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
 
       console.log('Notification preferences updated:', updated);
     } catch (error) {
-      console.error('Error updating notification preferences:', error);
+      console.log('Error updating notification preferences:', error);
     }
   };
 

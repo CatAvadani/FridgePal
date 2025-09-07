@@ -43,7 +43,7 @@ export default function SettingsScreen() {
       setNotificationsEnabled(prefs.enabled);
       setNotificationTime(prefs.notificationTime);
     } catch (error) {
-      console.error('Error loading notification preferences:', error);
+      console.log('Error loading notification preferences:', error);
     }
   };
 
@@ -64,7 +64,7 @@ export default function SettingsScreen() {
               console.log('Logout successful, navigating to login');
               router.replace('/login');
             } catch (error) {
-              console.error('Logout error:', error);
+              console.log('Logout error:', error);
               Alert.alert('Logout Failed', 'Please try again.');
             }
           },
@@ -89,7 +89,7 @@ export default function SettingsScreen() {
       setNotificationsEnabled(enabled);
       console.log('Notification preferences updated:', { enabled });
     } catch (error) {
-      console.error('Error updating notification preferences:', error);
+      console.log('Error updating notification preferences:', error);
     }
   };
 
@@ -206,7 +206,7 @@ export default function SettingsScreen() {
                 buttons: [{ text: 'OK', style: 'default' }],
               });
             } catch (error) {
-              console.error('Error updating notification time:', error);
+              console.log('Error updating notification time:', error);
             }
           }}
           onCancel={() => setShowTimePicker(false)}
